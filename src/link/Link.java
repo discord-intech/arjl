@@ -1,17 +1,22 @@
 package link;
 
 
+import enums.Bandwidth;
 import enums.LinkTypes;
+import exceptions.BadCallException;
 import hardware.AbstractHardware;
 
 import java.util.ArrayList;
 
-public abstract class AbstractLink
+/**
+ * Classe définissant les liens entre appareils
+ */
+public class Link
 {
 
     private AbstractHardware hard1;
     private AbstractHardware hard2;
-    private int bandwidth;
+    private Bandwidth bandwidth;
     private LinkTypes type;
 
     /**
@@ -19,7 +24,7 @@ public abstract class AbstractLink
      * @param hard1 premier appareil
      * @param hard2 deuxième appareil
      */
-    public AbstractLink(AbstractHardware hard1, AbstractHardware hard2, int bandwidth)
+    public Link(AbstractHardware hard1, AbstractHardware hard2, Bandwidth bandwidth)
     {
         this.hard1 = hard1;
         this.hard2 = hard2;
@@ -46,10 +51,31 @@ public abstract class AbstractLink
     }
 
     /**
+     * Renvoie la bande passante du lien
+     */
+    public Bandwidth getBandwidth()
+    {
+        return bandwidth;
+    }
+
+    /**
      * Permet de forcer une bande passante au lien
      */
-    public void forceBandwidth(int bandwidth)
+    public void forceBandwidth(Bandwidth bandwidth)
     {
         this.bandwidth = bandwidth;
+    }
+
+    /**
+     * Envoie "l'autre" appareil quand l'un d'eux demande avec qui il est connecté
+     * @param hardware l'appareil qui fait la demande
+     * @throws BadCallException si l'appareil donné n'est même par relié au lien
+     */
+    public AbstractHardware getOtherHardware(AbstractHardware hardware) throws BadCallException {
+        if(hard1 == hardware)
+            return hard2;
+        else if(hard2 == hardware)
+            return hard1;
+        throw new BadCallException();
     }
 }

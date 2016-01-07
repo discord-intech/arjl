@@ -1,8 +1,10 @@
 package enums;
 
+/**
+ * Enum des types de liens
+ */
 public enum LinkTypes
 {
-    ETH_100,
-    ETH_1G,
+    ETH,
     SERIAL;
 }
