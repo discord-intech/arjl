@@ -20,7 +20,7 @@ public class Link
     private LinkTypes type;
 
     /**
-     * Constructeur de lien à appeller avec super()
+     * Constructeur de lien
      * @param hard1 premier appareil
      * @param hard2 deuxième appareil
      */
