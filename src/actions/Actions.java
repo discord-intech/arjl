@@ -65,6 +65,7 @@ public class Actions
         try {
             hard.get(0).disconnect(link);
             hard.get(1).disconnect(link);
+            link.forget();
         } catch (BadCallException e) {
             e.printStackTrace();
         }

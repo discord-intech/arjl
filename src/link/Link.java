@@ -19,6 +19,9 @@ public class Link
     private Bandwidth bandwidth;
     private LinkTypes type;
 
+    /** Permet de compter les liens instanciés */
+    private static int linksCount=0;
+
     /**
      * Constructeur de lien
      * @param hard1 premier appareil
@@ -29,6 +32,7 @@ public class Link
         this.hard1 = hard1;
         this.hard2 = hard2;
         this.bandwidth = bandwidth;
+        linksCount++;
     }
 
     /**
@@ -77,5 +81,21 @@ public class Link
         else if(hard2 == hardware)
             return hard1;
         throw new BadCallException();
+    }
+
+    /**
+     * Oublie le lien (décrémente le compte de liens)
+     */
+    public void forget()
+    {
+        linksCount--;
+    }
+
+    /**
+     * Renvoie le nombre de liens instanciés
+     */
+    public static int getLinksCount()
+    {
+        return linksCount;
     }
 }
