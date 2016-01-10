@@ -19,7 +19,7 @@ public class Packet
     public int lastPort;
 
     private PacketTypes type;
-    private boolean isResponse;
+    public boolean isResponse;
 
     public Packet(IP dst_addr, IP dst_mask, IP src_addr, IP src_mask, int src_mac, int dst_mac, PacketTypes type, boolean isResponse)
     {

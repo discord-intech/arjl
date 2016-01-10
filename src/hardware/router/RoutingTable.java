@@ -12,7 +12,7 @@ public class RoutingTable
 
     private ArrayList<IP> subnets = new ArrayList<>();
     private ArrayList<IP> masks = new ArrayList<>();
-    private ArrayList<Integer> gateways = new ArrayList<>(); // Ce sont des MACs !
+    private ArrayList<IP> gateways = new ArrayList<>(); // Ce sont des MACs !
     private ArrayList<Integer> port_numbers = new ArrayList<>();
     private ArrayList<Integer> metric = new ArrayList<>();
 
@@ -21,7 +21,7 @@ public class RoutingTable
      * @param default_route_port le port du routeur pour l'adresse par défaut
      * @param default_gateway la passerelle par défaut (généralement ce qui dirige vers le réseau opérateur)
      */
-    public RoutingTable(int default_route_port, int default_gateway)
+    public RoutingTable(int default_route_port, IP default_gateway)
     {
         port_numbers.add(default_route_port);
         subnets.add(new IP(0,0,0,0));
@@ -38,18 +38,27 @@ public class RoutingTable
         port_numbers.add(0);
         subnets.add(new IP(0,0,0,0));
         masks.add(new IP(0,0,0,0));
-        gateways.add(0);
+        gateways.add(new IP(0,0,0,0));
         metric.add(255);
+    }
+
+    public synchronized void addRule(int port_number, IP subnet, IP mask, IP gateway, int metric)
+    {
+        port_numbers.add(port_number);
+        subnets.add(subnet);
+        masks.add(mask);
+        gateways.add(gateway);
+        this.metric.add(metric);
     }
 
     /**
      * Route le paquet
      * @param address l'adresse du paquet à router
-     * @return une liste { le port de destination ; la mac du NHR }
+     * @return une liste { le port de destination ; l'IP du NHR }
      */
-    public ArrayList<Integer> routeMe(IP address)
+    public ArrayList<Object> routeMe(IP address)
     {
-        ArrayList<Integer> res = new ArrayList<>();
+        ArrayList<Object> res = new ArrayList<>();
         ArrayList<Integer> pot_res = new ArrayList<>(); // Représente les résultats potentiels
 
         //On cherche les différentes entrées pour ce sous-réseau

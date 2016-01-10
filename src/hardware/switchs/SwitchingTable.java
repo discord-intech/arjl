@@ -10,8 +10,10 @@ public class SwitchingTable
     private ArrayList<Integer> macs = new ArrayList<>();
     private ArrayList<Integer> ports = new ArrayList<>();
 
-    public void addRule(int mac, int port)
+    public synchronized void addRule(int mac, int port)
     {
+        if(macs.contains(mac))
+            return;
         macs.add(mac);
         ports.add(port);
     }
