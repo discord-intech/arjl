@@ -5,6 +5,7 @@ import enums.LinkTypes;
 import exceptions.BadCallException;
 import exceptions.NoFreePortsException;
 import hardware.AbstractHardware;
+import hardware.router.AbstractRouter;
 import link.Link;
 
 import java.util.ArrayList;
@@ -26,6 +27,11 @@ public class Actions
         //On vérifie que les 2 appareils ont bien un port de libre
         if(!hard1.getFreePorts().contains(linkType) || !hard2.getFreePorts().contains(linkType))
             return null;
+
+        if(hard1 instanceof AbstractRouter || hard2 instanceof AbstractRouter)
+        {
+            //TODO vérification spéciale pour connecter le bon port au bon sous-réseau
+        }
 
         Link link = new Link(hard1, hard2, Bandwidth.NULL);
 
