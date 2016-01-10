@@ -36,9 +36,32 @@ public class IP
                 address.o4 & this.o4);
     }
 
+    /**
+     * Vérifie que l'adresse fournie est plus grande que celle-ci
+     * @param other l'adresse à comparer
+     */
+    public boolean isSmallerThan(IP other)
+    {
+        if(other.o1 > this.o1)
+            return true;
+        if(other.o2 > this.o2)
+            return true;
+        if(other.o3 > this.o3)
+            return true;
+        if(other.o4 > this.o4)
+            return true;
+        return false;
+    }
+
     public boolean equals(IP other)
     {
         return ( (this.o1 == other.o1) && (this.o2 == other.o2) && (this.o3 == other.o3) && (this.o4 == other.o4) );
+    }
+
+    @Override
+    public String toString()
+    {
+        return o1+"."+o2+"."+o3+"."+o4;
     }
 
 }

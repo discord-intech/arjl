@@ -6,6 +6,7 @@ import enums.LinkTypes;
 import exceptions.BadCallException;
 import exceptions.NoFreePortsException;
 import link.Link;
+import packet.Packet;
 
 import java.util.ArrayList;
 
@@ -15,23 +16,34 @@ import java.util.ArrayList;
 public abstract class AbstractHardware
 {
     /** Liste des liens connectés */
-    private ArrayList<Link> ports;
+    protected ArrayList<Link> ports;
 
     /** Liste des types de ports disponibles sur l'appareil */
-    private final ArrayList<LinkTypes> port_types;
+    protected final ArrayList<LinkTypes> port_types;
 
     /** Liste des bandes passantes par port (ETH-100M / ETH-1G / ...) */
-    private final ArrayList<Bandwidth> port_bandwidth;
+    protected final ArrayList<Bandwidth> port_bandwidth;
+
+    /** Liste de paquets représentant le tampon de l'appareil */
+    protected ArrayList<Packet> stack = new ArrayList<Packet>();
+
+    /** Liste temporaire de paquets pour éviter qu'ils soient traités trop vite */
+    protected ArrayList<Packet> futureStack = new ArrayList<Packet>();
+
+    /** Représente le maximum supportable par l'appareil en terme de paquets dans son tampon (stack) */
+    protected final int overflowValue;
 
     /**
      * Constructeur à appeller avec super()
      * @param port_types liste des types de liens connectables
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param overflow maximum de paquets supportables dans son tampon de traitement
      */
-    public AbstractHardware(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth)
+    public AbstractHardware(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow)
     {
         this.port_types = port_types;
         this.port_bandwidth = port_bandwidth;
+        this.overflowValue = overflow;
         ports = new ArrayList<Link>(port_types.size());
     }
 
@@ -131,4 +143,39 @@ public abstract class AbstractHardware
         }
         throw new BadCallException();
     }
+
+    /**
+     * Revoie le port sur lequel le lien donné est connecté
+     * @param link le lien
+     * @return le port ou -1 si le lien n'est pas connecté
+     */
+    public int whichPort(Link link)
+    {
+        for(int i=0 ; i<ports.size() ; i++)
+        {
+            if(ports.get(i) == link)
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Permet de valider le nouveau stack une fois tous les stacks de tous les appareils traités
+     */
+    public void validateStack()
+    {
+        this.stack = this.futureStack;
+        this.futureStack = new ArrayList<>();
+    }
+
+    /**
+     * Ces méthodes envoient et reçoivent des paquets, c'est la couche physique, pas de modification du paquet !
+     */
+    public abstract void receive(Packet packet, int port);
+    public abstract void send(Packet packet, int port) throws BadCallException;
+
+    /**
+     * Cette méthode lance le traitement du tampon (tout le tampon pour l'instant)
+     */
+    public abstract void treat() throws BadCallException;
 }
