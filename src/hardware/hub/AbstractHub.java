@@ -50,17 +50,18 @@ public abstract class AbstractHub extends AbstractHardware
             {
                 if (i != p.lastPort)
                 {
-                    if (packetsSent[i] < ports.get(i).getBandwidth().value)
+                    if (ports.get(i) != null && packetsSent[i] < ports.get(i).getBandwidth().value)
                     {
                         this.send(new Packet(p), i);
                         packetsSent[i]++;
                     }
-                    else
+                    else if(ports.get(i) != null)
                         newStack.add(p);
                 }
             }
         }
 
-        futureStack.addAll(0, newStack);
+        if(!newStack.isEmpty())
+            futureStack.addAll(0, newStack);
     }
 }

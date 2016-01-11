@@ -27,11 +27,12 @@ public class Link
      * @param hard1 premier appareil
      * @param hard2 deuxième appareil
      */
-    public Link(AbstractHardware hard1, AbstractHardware hard2, Bandwidth bandwidth)
+    public Link(AbstractHardware hard1, AbstractHardware hard2, LinkTypes linktype, Bandwidth bandwidth)
     {
         this.hard1 = hard1;
         this.hard2 = hard2;
         this.bandwidth = bandwidth;
+        this.type = linktype;
         linksCount++;
     }
 

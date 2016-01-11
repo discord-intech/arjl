@@ -79,19 +79,19 @@ public class RoutingTable
                 j=i;
         }
 
-        pot_res.clear(); // On le vide pour le réutiliser
+        ArrayList<Integer> more_pot_res = new ArrayList<>();
 
         //On vérifie que l'on a pas plusieurs résultat avec la même métrique
         for(int i=0 ; i < metric.size() ; i++)
         {
-            if((metric.get(i) == metric.get(j)) && (i != j))
-                pot_res.add(i);
+            if(pot_res.contains(i) && (metric.get(i) == metric.get(j)) && (i != j))
+                more_pot_res.add(i);
         }
 
         //Si c'est le cas, on prends celle avec le plus petit masque
-        if(!pot_res.isEmpty())
+        if(!more_pot_res.isEmpty())
         {
-            for(int index : pot_res)
+            for(int index : more_pot_res)
                 if(!masks.get(j).isSmallerThan(masks.get(index)))
                     j=index;
         }

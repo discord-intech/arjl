@@ -26,7 +26,7 @@ public class SwitchingTable
     public int commute(int mac)
     {
         for(int i=0 ; i<macs.size() ; i++)
-            if(macs.get(i) == mac)
+            if(macs.get(i).equals(mac))
                 return ports.get(i);
         return -1;
     }

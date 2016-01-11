@@ -33,7 +33,7 @@ public class Actions
             //TODO vérification spéciale pour connecter le bon port au bon sous-réseau
         }
 
-        Link link = new Link(hard1, hard2, Bandwidth.NULL);
+        Link link = new Link(hard1, hard2, linkType, Bandwidth.NULL);
 
         // On check la bande passante à utiliser
         //TODO à optimiser !

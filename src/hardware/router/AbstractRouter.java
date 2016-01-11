@@ -53,7 +53,7 @@ public abstract class AbstractRouter extends AbstractHardware
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
         if(packet.tracked)
-            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR= "+packet.getNHR() );
+            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
     }
 
     @Override
@@ -72,13 +72,14 @@ public abstract class AbstractRouter extends AbstractHardware
             {
                 if(p.isResponse)
                 {
-                    for(Packet i : waitingForARP)
+                    for(int i=0 ; i<waitingForARP.size() ; i++)
                     {
-                        if(p.src_addr == i.getNHR())
+                        if(p.src_addr.equals(waitingForARP.get(i).getNHR()))
                         {
                             arp.addRule(p.src_addr, p.src_mac);
-                            futureStack.add(i);
+                            futureStack.add(waitingForARP.get(i));
                             waitingForARP.remove(i);
+                            i--;
                         }
                     }
                 }
@@ -86,11 +87,11 @@ public abstract class AbstractRouter extends AbstractHardware
                 {
                     for(IP i : IPinterfaces)
                     {
-                        if(i == p.dst_addr)
+                        if(i.equals(p.dst_addr))
                         {
                             this.send(new Packet(p.src_addr, p.src_mask,
                                     i, MASKinterfaces.get(IPinterfaces.indexOf(i)),
-                                    MACinterfaces.get(IPinterfaces.indexOf(i)), p.src_mac, PacketTypes.ARP, true), p.lastPort);
+                                    MACinterfaces.get(IPinterfaces.indexOf(i)), p.src_mac, PacketTypes.ARP, true, true), p.lastPort);
                             break;
                         }
                     }
@@ -98,8 +99,20 @@ public abstract class AbstractRouter extends AbstractHardware
                 continue;
             }
 
-            if(IPinterfaces.contains(p.dst_addr))
+            if(!MACinterfaces.contains(p.dst_mac)) //S'il ne m'est pas destiné, je l'ignore
                 continue;
+
+            if(IPinterfaces.contains(p.dst_addr)) //S'il m'est destiné (en bout de chaîne)
+            {
+                if (p.getType() == PacketTypes.WEB) //DEBUG !!!
+                {
+                    System.out.println(this.toString() + " reçue WEB de " + p.src_addr);
+                    this.send(new Packet(p.src_addr, p.src_mask,
+                            IPinterfaces.get(p.lastPort), MASKinterfaces.get(p.lastPort),
+                            MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, !p.isResponse, true), p.lastPort);
+                }
+                continue;
+            }
 
             route = routingTable.routeMe(p.dst_addr); //route={port de redirection ; IP du NHR}
             mac = arp.findARP((IP)route.get(1));
@@ -109,7 +122,7 @@ public abstract class AbstractRouter extends AbstractHardware
                 waitingForARP.add(p);
                 this.send(new Packet((IP)route.get(1), p.dst_mask,
                         IPinterfaces.get((int)route.get(0)), MASKinterfaces.get((int)route.get(0)),
-                        MACinterfaces.get((int)route.get(0)), -1, PacketTypes.ARP, false), (int)route.get(0));
+                        MACinterfaces.get((int)route.get(0)), -1, PacketTypes.ARP, false, true), (int)route.get(0));
                 continue;
             }
 
@@ -118,6 +131,12 @@ public abstract class AbstractRouter extends AbstractHardware
             this.send(p, (int)route.get(0));
 
         }
-        futureStack.addAll(0, newStack);
+        if(!newStack.isEmpty())
+            futureStack.addAll(0, newStack);
+    }
+
+    public void addRoutingRule(int port_number, IP subnet, IP mask, IP gateway, int metric)
+    {
+        routingTable.addRule(port_number, subnet, mask, gateway, metric);
     }
 }

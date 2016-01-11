@@ -27,7 +27,7 @@ public class ARPTable
     {
         for(int i=0 ; i < ips.size() ; i++)
         {
-            if(ips.get(i) == address)
+            if(ips.get(i).equals(address))
                 return macs.get(i);
         }
         return -1;

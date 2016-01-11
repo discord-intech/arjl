@@ -33,12 +33,24 @@ public class JUnit_networking
                 new ArrayList<IP>(){{add(new IP(192,168,1,2));add(new IP(192,168,4,1));}},
                 new ArrayList<IP>(){{add(new IP(255,255,255,0));add(new IP(255,255,255,0));}});
 
+            Standard2ETHRouter C = new Standard2ETHRouter(new ArrayList<Integer>(){{add(7);add(8);}},
+                    new ArrayList<IP>(){{add(new IP(192,168,1,3));add(new IP(192,168,5,1));}},
+                    new ArrayList<IP>(){{add(new IP(255,255,255,0));add(new IP(255,255,255,0));}});
+
+            Standard2ETHRouter D = new Standard2ETHRouter(new ArrayList<Integer>(){{add(9);add(10);}},
+                    new ArrayList<IP>(){{add(new IP(192,168,0,3));add(new IP(192,168,6,1));}},
+                    new ArrayList<IP>(){{add(new IP(255,255,255,0));add(new IP(255,255,255,0));}});
+
             Standard24Switch srA = new Standard24Switch();
             Standard24Switch srB = new Standard24Switch();
 
+            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(192,168,0,2), 1);
+            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(192,168,1,2), 1);
 
             Actions.connect(A, srA, LinkTypes.ETH);
             Actions.connect(B, srB, LinkTypes.ETH);
+            Actions.connect(C, srB, LinkTypes.ETH);
+            Actions.connect(D, srA, LinkTypes.ETH);
             Actions.connect(central, srA, LinkTypes.ETH);
             Actions.connect(central, srB, LinkTypes.ETH);
 
@@ -47,7 +59,26 @@ public class JUnit_networking
                     3, 1, PacketTypes.WEB, false, true); // Ce paquet a un bon NHR et une bonne mac cible (il a fait ARP)
             p.setNHR(new IP(192,168,0,1));
             A.send(p, 0);
+
+            while(true)
+            {
+                A.treat();
+                B.treat();
+                srA.treat();
+                srB.treat();
+                central.treat();
+
+                A.validateStack();
+                B.validateStack();
+                srA.validateStack();
+                srB.validateStack();
+                central.validateStack();
+
+                Thread.sleep(1000);
+            }
         } catch (BadCallException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

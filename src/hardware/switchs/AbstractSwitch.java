@@ -55,7 +55,7 @@ public abstract class AbstractSwitch extends AbstractHardware
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
         if(packet.tracked)
-            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR= "+packet.getNHR() );
+            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
     }
 
     @Override
@@ -86,19 +86,19 @@ public abstract class AbstractSwitch extends AbstractHardware
                 {
                     if (i != p.lastPort)
                     {
-                        if (packetsSent[i] < ports.get(i).getBandwidth().value)
+                        if (ports.get(i) != null && packetsSent[i] < ports.get(i).getBandwidth().value)
                         {
                             this.send(new Packet(p), i);
                             packetsSent[i]++;
                         }
-                        else
+                        else if(ports.get(i) != null)
                             newStack.add(p);
                     }
                 }
             }
         }
-
-        futureStack.addAll(0, newStack);
+        if(!newStack.isEmpty())
+            futureStack.addAll(0, newStack);
     }
 
 }
