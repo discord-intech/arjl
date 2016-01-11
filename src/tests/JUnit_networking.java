@@ -4,6 +4,7 @@ import actions.Actions;
 import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
+import hardware.hub.Standard24Hub;
 import hardware.router.Standard2ETHRouter;
 import hardware.switchs.Standard24Switch;
 import org.junit.Test;
@@ -42,10 +43,10 @@ public class JUnit_networking
                     new ArrayList<IP>(){{add(new IP(255,255,255,0));add(new IP(255,255,255,0));}});
 
             Standard24Switch srA = new Standard24Switch();
-            Standard24Switch srB = new Standard24Switch();
+            Standard24Hub srB = new Standard24Hub();
 
-            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(192,168,0,2), 1);
-            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(192,168,1,2), 1);
+            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(0,0,0,0), 1);
+            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(0,0,0,0), 1);
 
             Actions.connect(A, srA, LinkTypes.ETH);
             Actions.connect(B, srB, LinkTypes.ETH);
@@ -59,17 +60,26 @@ public class JUnit_networking
                     3, 1, PacketTypes.WEB, false, true); // Ce paquet a un bon NHR et une bonne mac cible (il a fait ARP)
             p.setNHR(new IP(192,168,0,1));
             A.send(p, 0);
+            p =new Packet(new IP(192,168,1,2), new IP(255,255,255,0),
+                    new IP(192,168,0,3), new IP(255,255,255,0),
+                    9, 1, PacketTypes.WEB, false, true);
+            p.setNHR(new IP(192,168,0,1));
+            D.send(p, 0);
 
             while(true)
             {
                 A.treat();
                 B.treat();
+                D.treat();
+                C.treat();
                 srA.treat();
                 srB.treat();
                 central.treat();
 
                 A.validateStack();
                 B.validateStack();
+                D.validateStack();
+                C.validateStack();
                 srA.validateStack();
                 srB.validateStack();
                 central.validateStack();

@@ -53,7 +53,7 @@ public abstract class AbstractRouter extends AbstractHardware
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
         if(packet.tracked)
-            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
+            System.out.println(this.IPinterfaces.get(port).toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
     }
 
     @Override
@@ -115,12 +115,27 @@ public abstract class AbstractRouter extends AbstractHardware
             }
 
             route = routingTable.routeMe(p.dst_addr); //route={port de redirection ; IP du NHR}
-            mac = arp.findARP((IP)route.get(1));
-            p.setNHR((IP)route.get(1));
+            IP ip;
+            if(route.get(1).equals(new IP(0,0,0,0))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
+            {
+                mac = arp.findARP(p.dst_addr);
+                ip = p.dst_addr;
+            }
+            else
+            {
+                mac = arp.findARP((IP) route.get(1));
+                ip = (IP)route.get(1);
+            }
+
+            p.setNHR(ip);
             if(mac == -1)
             {
                 waitingForARP.add(p);
-                this.send(new Packet((IP)route.get(1), p.dst_mask,
+                if(route.get(1).equals(new IP(0,0,0,0))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
+                    ip = p.dst_addr;
+                else
+                    ip = (IP)route.get(1);
+                this.send(new Packet(ip, p.dst_mask,
                         IPinterfaces.get((int)route.get(0)), MASKinterfaces.get((int)route.get(0)),
                         MACinterfaces.get((int)route.get(0)), -1, PacketTypes.ARP, false, true), (int)route.get(0));
                 continue;
