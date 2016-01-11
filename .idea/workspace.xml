@@ -5,15 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="91e31539-377e-47c2-a4fc-1bf7d7141627" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/actions/Actions.java" afterPath="$PROJECT_DIR$/src/actions/Actions.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/hardware/ARPTable.java" afterPath="$PROJECT_DIR$/src/hardware/ARPTable.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/hardware/hub/AbstractHub.java" afterPath="$PROJECT_DIR$/src/hardware/hub/AbstractHub.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/hardware/router/AbstractRouter.java" afterPath="$PROJECT_DIR$/src/hardware/router/AbstractRouter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/hardware/router/RoutingTable.java" afterPath="$PROJECT_DIR$/src/hardware/router/RoutingTable.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/hardware/switchs/AbstractSwitch.java" afterPath="$PROJECT_DIR$/src/hardware/switchs/AbstractSwitch.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/hardware/switchs/SwitchingTable.java" afterPath="$PROJECT_DIR$/src/hardware/switchs/SwitchingTable.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/link/Link.java" afterPath="$PROJECT_DIR$/src/link/Link.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tests/JUnit_networking.java" afterPath="$PROJECT_DIR$/src/tests/JUnit_networking.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/hardware/client/AbstractClient.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/hardware/server/AbstractServer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Network Simulator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,12 +31,38 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="JUnit_networking.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="JUnit_networking.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/tests/JUnit_networking.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.8128898">
-              <caret line="52" column="51" selection-start-line="52" selection-start-column="51" selection-end-line="52" selection-end-column="51" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="62" column="23" selection-start-line="62" selection-start-column="23" selection-end-line="62" selection-end-column="23" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractServer.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/hardware/server/AbstractServer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="1.5343035">
+              <caret line="41" column="3" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#1479#1480#0" expanded="true" />
+                <element signature="e#1523#1524#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractClient.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/hardware/client/AbstractClient.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="42" column="50" selection-start-line="42" selection-start-column="50" selection-end-line="42" selection-end-column="50" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -61,7 +81,7 @@
         <entry file="file://$PROJECT_DIR$/src/hardware/router/AbstractRouter.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="107" column="17" selection-start-line="107" selection-start-column="17" selection-end-line="107" selection-end-column="17" />
+              <caret line="42" column="4" selection-start-line="42" selection-start-column="4" selection-end-line="59" selection-end-column="49" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -96,16 +116,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ARPTable.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/hardware/ARPTable.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="24" column="7" selection-start-line="24" selection-start-column="7" selection-end-line="24" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -181,6 +191,8 @@
         <option value="$PROJECT_DIR$/src/hardware/switchs/SwitchingTable.java" />
         <option value="$PROJECT_DIR$/src/hardware/router/AbstractRouter.java" />
         <option value="$PROJECT_DIR$/src/tests/JUnit_networking.java" />
+        <option value="$PROJECT_DIR$/src/hardware/client/AbstractClient.java" />
+        <option value="$PROJECT_DIR$/src/hardware/server/AbstractServer.java" />
       </list>
     </option>
   </component>
@@ -229,8 +241,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -361,6 +371,28 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Network Simulator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="netsim" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hardware" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="router" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -384,6 +416,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="hub" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Network Simulator" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="netsim" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hardware" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="client" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -444,6 +498,8 @@
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="Scratches" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -755,9 +811,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="JUnit_networking - 2016.01.11 at 15h 33m 52s.xml">
-      <configuration name="JUnit_networking" configurationId="JUnit" />
-    </history-entry>
     <history-entry file="JUnit_networking - 2016.01.11 at 15h 37m 42s.xml">
       <configuration name="JUnit_networking" configurationId="JUnit" />
     </history-entry>
@@ -783,6 +836,9 @@
       <configuration name="JUnit_networking" configurationId="JUnit" />
     </history-entry>
     <history-entry file="JUnit_networking - 2016.01.11 at 16h 08m 08s.xml">
+      <configuration name="JUnit_networking" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="JUnit_networking - 2016.01.11 at 17h 04m 01s.xml">
       <configuration name="JUnit_networking" configurationId="JUnit" />
     </history-entry>
   </component>
@@ -838,20 +894,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/exceptions/NoFreePortsException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="3" column="48" selection-start-line="3" selection-start-column="48" selection-end-line="3" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/link/Link.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="21" selection-start-line="34" selection-start-column="21" selection-end-line="34" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/exceptions/BadCallException.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1148,7 +1190,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.35323384">
           <caret line="83" column="30" selection-start-line="83" selection-start-column="30" selection-end-line="83" selection-end-column="30" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1156,7 +1197,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1164,7 +1204,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.8076925">
           <caret line="979" column="0" selection-start-line="979" selection-start-column="0" selection-end-line="979" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1228,21 +1267,43 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/tests/JUnit_networking.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="62" column="23" selection-start-line="62" selection-start-column="23" selection-end-line="62" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/hardware/router/AbstractRouter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="107" column="17" selection-start-line="107" selection-start-column="17" selection-end-line="107" selection-end-column="17" />
+          <caret line="42" column="4" selection-start-line="42" selection-start-column="4" selection-end-line="59" selection-end-column="49" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/tests/JUnit_networking.java">
+    <entry file="file://$PROJECT_DIR$/src/hardware/client/AbstractClient.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8128898">
-          <caret line="52" column="51" selection-start-line="52" selection-start-column="51" selection-end-line="52" selection-end-column="51" />
-          <folding />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="42" column="50" selection-start-line="42" selection-start-column="50" selection-end-line="42" selection-end-column="50" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/hardware/server/AbstractServer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.5343035">
+          <caret line="41" column="3" selection-start-line="41" selection-start-column="3" selection-end-line="41" selection-end-column="3" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1479#1480#0" expanded="true" />
+            <element signature="e#1523#1524#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
