@@ -1,9 +1,9 @@
 package hardware.router;
 
 
-import com.sun.xml.internal.ws.wsdl.writer.document.PortType;
 import enums.Bandwidth;
 import enums.LinkTypes;
+import exceptions.BadCallException;
 import packet.IP;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Standard2ETHRouter extends AbstractRouter
      * @param IPinterfaces
      * @param masks
      */
-    public Standard2ETHRouter(ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, ArrayList<IP> masks) {
+    public Standard2ETHRouter(ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, ArrayList<IP> masks) throws BadCallException {
         //Pour initialiser les appareils, JAVA me force à utiliser les classes anonymes, c'est juste horrible...
         super(new ArrayList<LinkTypes>(){{
             add(LinkTypes.ETH);

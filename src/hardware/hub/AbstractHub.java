@@ -18,8 +18,7 @@ public abstract class AbstractHub extends AbstractHardware
      * @param port_types     liste des types de liens connectables
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      */
-    public AbstractHub(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow)
-    {
+    public AbstractHub(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) throws BadCallException {
         super(port_types, port_bandwidth, overflow);
     }
 

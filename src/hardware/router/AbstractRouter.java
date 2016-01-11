@@ -32,8 +32,7 @@ public abstract class AbstractRouter extends AbstractHardware
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      */
     public AbstractRouter(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth,
-                          int overflow, ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, ArrayList<IP> masks)
-    {
+                          int overflow, ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, ArrayList<IP> masks) throws BadCallException {
         super(port_types, port_bandwidth, overflow);
         this.MACinterfaces = MACinterfaces;
         this.IPinterfaces = IPinterfaces;
@@ -53,6 +52,8 @@ public abstract class AbstractRouter extends AbstractHardware
     {
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
+        if(packet.tracked)
+            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR= "+packet.getNHR() );
     }
 
     @Override
@@ -73,7 +74,7 @@ public abstract class AbstractRouter extends AbstractHardware
                 {
                     for(Packet i : waitingForARP)
                     {
-                        if(p.src_addr == i.dst_addr)
+                        if(p.src_addr == i.getNHR())
                         {
                             arp.addRule(p.src_addr, p.src_mac);
                             futureStack.add(i);
@@ -97,8 +98,12 @@ public abstract class AbstractRouter extends AbstractHardware
                 continue;
             }
 
-            route = routingTable.routeMe(p.dst_addr);
+            if(IPinterfaces.contains(p.dst_addr))
+                continue;
+
+            route = routingTable.routeMe(p.dst_addr); //route={port de redirection ; IP du NHR}
             mac = arp.findARP((IP)route.get(1));
+            p.setNHR((IP)route.get(1));
             if(mac == -1)
             {
                 waitingForARP.add(p);

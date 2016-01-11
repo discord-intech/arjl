@@ -2,6 +2,7 @@ package hardware.switchs;
 
 import enums.Bandwidth;
 import enums.LinkTypes;
+import exceptions.BadCallException;
 
 import java.util.ArrayList;
 
@@ -11,7 +12,7 @@ public class Standard24Switch extends AbstractSwitch
     /**
      * Constructeur à appeller
      */
-    public Standard24Switch(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) {
+    public Standard24Switch() throws BadCallException {
         super(new ArrayList<LinkTypes>(){{
             add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH); add(LinkTypes.ETH);
         }},

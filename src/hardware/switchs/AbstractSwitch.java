@@ -21,7 +21,7 @@ public abstract class AbstractSwitch extends AbstractHardware
      * @param port_types     liste des types de liens connectables
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      */
-    public AbstractSwitch(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) {
+    public AbstractSwitch(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) throws BadCallException {
         super(port_types, port_bandwidth, overflow);
     }
 
@@ -54,6 +54,8 @@ public abstract class AbstractSwitch extends AbstractHardware
     {
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
+        if(packet.tracked)
+            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR= "+packet.getNHR() );
     }
 
     @Override

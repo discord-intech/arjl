@@ -53,8 +53,10 @@ public class IP
         return false;
     }
 
-    public boolean equals(IP other)
+    @Override
+    public boolean equals(Object o)
     {
+        IP other = (IP)o;
         return ( (this.o1 == other.o1) && (this.o2 == other.o2) && (this.o3 == other.o3) && (this.o4 == other.o4) );
     }
 

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public abstract class AbstractHardware
 {
     /** Liste des liens connectés */
-    protected ArrayList<Link> ports;
+    protected ArrayList<Link> ports = new ArrayList<>();
 
     /** Liste des types de ports disponibles sur l'appareil */
     protected final ArrayList<LinkTypes> port_types;
@@ -39,12 +39,14 @@ public abstract class AbstractHardware
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      * @param overflow maximum de paquets supportables dans son tampon de traitement
      */
-    public AbstractHardware(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow)
-    {
+    public AbstractHardware(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) throws BadCallException {
+        if(port_bandwidth.size() != port_types.size())
+            throw new BadCallException();
         this.port_types = port_types;
         this.port_bandwidth = port_bandwidth;
         this.overflowValue = overflow;
-        ports = new ArrayList<Link>(port_types.size());
+        for(int i=0;i<port_bandwidth.size();i++)
+            ports.add(null);
     }
 
     /**
