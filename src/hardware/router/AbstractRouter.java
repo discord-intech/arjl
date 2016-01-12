@@ -16,14 +16,13 @@ import java.util.ArrayList;
 public abstract class AbstractRouter extends AbstractHardware
 {
 
-    protected RoutingTable routingTable = new RoutingTable();
+    protected RoutingTable routingTable;
     protected ARPTable arp = new ARPTable();
 
     protected ArrayList<Packet> waitingForARP = new ArrayList<Packet>();
 
     protected ArrayList<Integer> MACinterfaces;
     protected ArrayList<IP> IPinterfaces;
-    protected ArrayList<IP> MASKinterfaces;
 
     /**
      * Constructeur à appeller avec super()
@@ -32,11 +31,12 @@ public abstract class AbstractRouter extends AbstractHardware
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      */
     public AbstractRouter(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth,
-                          int overflow, ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, ArrayList<IP> masks) throws BadCallException {
+                          int overflow, ArrayList<Integer> MACinterfaces,
+                          ArrayList<IP> IPinterfaces, IP default_gateway, int default_port) throws BadCallException {
         super(port_types, port_bandwidth, overflow);
         this.MACinterfaces = MACinterfaces;
         this.IPinterfaces = IPinterfaces;
-        this.MASKinterfaces = masks;
+        this.routingTable = new RoutingTable(default_port, default_gateway);
     }
 
 
@@ -50,6 +50,8 @@ public abstract class AbstractRouter extends AbstractHardware
     @Override
     public void send(Packet packet, int port) throws BadCallException
     {
+        if(packet.TTLdown())
+            return;
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
         if(packet.tracked)
@@ -89,9 +91,8 @@ public abstract class AbstractRouter extends AbstractHardware
                     {
                         if(i.equals(p.dst_addr))
                         {
-                            this.send(new Packet(p.src_addr, p.src_mask,
-                                    i, MASKinterfaces.get(IPinterfaces.indexOf(i)),
-                                    MACinterfaces.get(IPinterfaces.indexOf(i)), p.src_mac, PacketTypes.ARP, true, true), p.lastPort);
+                            this.send(new Packet(p.src_addr,
+                                    i, MACinterfaces.get(IPinterfaces.indexOf(i)), p.src_mac, PacketTypes.ARP, true, true), p.lastPort);
                             break;
                         }
                     }
@@ -99,18 +100,12 @@ public abstract class AbstractRouter extends AbstractHardware
                 continue;
             }
 
-            if(!MACinterfaces.contains(p.dst_mac)) //S'il ne m'est pas destiné, je l'ignore
+            if(!MACinterfaces.contains(p.dst_mac) && !MACinterfaces.contains(p.src_mac) ) //S'il ne m'est pas destiné, je l'ignore
                 continue;
 
             if(IPinterfaces.contains(p.dst_addr)) //S'il m'est destiné (en bout de chaîne)
             {
-                if (p.getType() == PacketTypes.WEB) //DEBUG !!!
-                {
-                    System.out.println(this.toString() + " reçue WEB de " + p.src_addr);
-                    this.send(new Packet(p.src_addr, p.src_mask,
-                            IPinterfaces.get(p.lastPort), MASKinterfaces.get(p.lastPort),
-                            MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, !p.isResponse, true), p.lastPort);
-                }
+                this.treatData(p);
                 continue;
             }
 
@@ -135,8 +130,8 @@ public abstract class AbstractRouter extends AbstractHardware
                     ip = p.dst_addr;
                 else
                     ip = (IP)route.get(1);
-                this.send(new Packet(ip, p.dst_mask,
-                        IPinterfaces.get((int)route.get(0)), MASKinterfaces.get((int)route.get(0)),
+                this.send(new Packet(ip,
+                        IPinterfaces.get((int)route.get(0)),
                         MACinterfaces.get((int)route.get(0)), -1, PacketTypes.ARP, false, true), (int)route.get(0));
                 continue;
             }
@@ -148,6 +143,10 @@ public abstract class AbstractRouter extends AbstractHardware
         }
         if(!newStack.isEmpty())
             futureStack.addAll(0, newStack);
+    }
+
+    protected void treatData(Packet p) throws BadCallException {
+        return;
     }
 
     public void addRoutingRule(int port_number, IP subnet, IP mask, IP gateway, int metric)

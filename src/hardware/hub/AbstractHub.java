@@ -32,6 +32,8 @@ public abstract class AbstractHub extends AbstractHardware
     @Override
     public void send(Packet packet, int port) throws BadCallException
     {
+        if(packet.TTLdown())
+            return;
         Link link = ports.get(port);
         link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
     }

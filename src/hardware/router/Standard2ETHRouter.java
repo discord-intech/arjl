@@ -15,9 +15,8 @@ public class Standard2ETHRouter extends AbstractRouter
      * Constructeur à appeller avec super()
      * @param MACinterfaces
      * @param IPinterfaces
-     * @param masks
      */
-    public Standard2ETHRouter(ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, ArrayList<IP> masks) throws BadCallException {
+    public Standard2ETHRouter(ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, IP default_gateway, int default_port) throws BadCallException {
         //Pour initialiser les appareils, JAVA me force à utiliser les classes anonymes, c'est juste horrible...
         super(new ArrayList<LinkTypes>(){{
             add(LinkTypes.ETH);
@@ -25,6 +24,6 @@ public class Standard2ETHRouter extends AbstractRouter
                 new ArrayList<Bandwidth>(){{
             add(Bandwidth.ETH_1G);
             add(Bandwidth.ETH_1G);}},
-                50, MACinterfaces, IPinterfaces, masks);
+                50, MACinterfaces, IPinterfaces, default_gateway, default_port);
     }
 }
