@@ -6,7 +6,7 @@ import exceptions.BadCallException;
 import exceptions.NoFreePortsException;
 import hardware.AbstractHardware;
 import hardware.router.AbstractRouter;
-import link.Link;
+import hardware.Link;
 
 import java.util.ArrayList;
 

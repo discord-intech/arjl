@@ -6,7 +6,7 @@ import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
 import hardware.router.AbstractRouter;
-import link.Link;
+import hardware.Link;
 import packet.IP;
 import packet.Packet;
 
@@ -56,10 +56,23 @@ public abstract class AbstractServer extends AbstractRouter
     protected void treatData(Packet p) throws BadCallException {
         if ((this.type == PacketTypes.WEB) && (p.getType() == PacketTypes.WEB)) //DEBUG !!!
         {
-            System.out.println(this.toString() + " reçue WEB de " + p.src_addr);
+            //System.out.println(this.IP + " : reçu WEB de " + p.src_addr);
             this.send(new Packet(p.src_addr,
                     IPinterfaces.get(p.lastPort),
-                    MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, true), p.lastPort);
+                    MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, false), p.lastPort);
+            this.send(new Packet(p.src_addr,
+                    IPinterfaces.get(p.lastPort),
+                    MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, false), p.lastPort);
+            this.send(new Packet(p.src_addr,
+                    IPinterfaces.get(p.lastPort),
+                    MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, false), p.lastPort);
+            this.send(new Packet(p.src_addr,
+                    IPinterfaces.get(p.lastPort),
+                    MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, false), p.lastPort);
+            this.send(new Packet(p.src_addr,
+                    IPinterfaces.get(p.lastPort),
+                    MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, false), p.lastPort);
+
         }
     }
 

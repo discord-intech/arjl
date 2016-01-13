@@ -66,4 +66,10 @@ public class IP
         return o1+"."+o2+"."+o3+"."+o4;
     }
 
+    public boolean isBroadcast(IP mask)
+    {
+        if(((o1 | mask.o1)&(o2 | mask.o2)&(o3 | mask.o3)&(o4 | mask.o4)) == 255)
+            return true;
+        return false;
+    }
 }

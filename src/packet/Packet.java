@@ -14,9 +14,11 @@ public class Packet
     private IP NHR;
     public boolean tracked = false;
 
+    private Object data; // Permet de stocker une objet dans le paquet
+
     /**
      * Permet au système de traitement des appareils de savoir par quel port est entré ce paquet (fictif, juste utile
-     * pour le broadcast)
+     * pour la redirection et le broadcast)
      */
     public int lastPort;
 
@@ -96,6 +98,17 @@ public class Packet
         if(TTL == 0)
             return true;
         return false;
+    }
+
+
+    public Object getData()
+    {
+        return this.data;
+    }
+
+    public void setData(Object data)
+    {
+        this.data = data;
     }
 
 }

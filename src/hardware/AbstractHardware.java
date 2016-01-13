@@ -5,7 +5,6 @@ import enums.Bandwidth;
 import enums.LinkTypes;
 import exceptions.BadCallException;
 import exceptions.NoFreePortsException;
-import link.Link;
 import packet.Packet;
 
 import java.util.ArrayList;

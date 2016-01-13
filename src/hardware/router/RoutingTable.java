@@ -1,6 +1,7 @@
 package hardware.router;
 
 import packet.IP;
+import packet.Packet;
 
 import java.util.ArrayList;
 
@@ -100,5 +101,19 @@ public class RoutingTable
         res.add(gateways.get(j));
 
         return res;
+    }
+
+    public boolean isBroadcast(Packet p)
+    {
+        ArrayList<Object> res = this.routeMe(p.dst_addr);
+
+        if(res.get(1).equals(new IP(0,0,0,0)))
+            return false;
+
+        IP mask = masks.get(subnets.indexOf((IP)res.get(1)));
+        if(p.dst_addr.isBroadcast(mask))
+            return true;
+        return false;
+
     }
 }

@@ -5,10 +5,10 @@ import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
 import hardware.client.StandardPC;
-import hardware.hub.Standard24Hub;
+import hardware.hub.Standard24ETHHub;
 import hardware.router.Standard2ETHRouter;
 import hardware.server.StandardWEBServer;
-import hardware.switchs.Standard24Switch;
+import hardware.switchs.Standard24ETHSwitch;
 import org.junit.Test;
 import packet.IP;
 
@@ -44,10 +44,12 @@ public class JUnit_networking
                     new IP(192,168,0,1), 0);
 
             StandardPC jeanLuc_PC = new StandardPC(11, new IP(192,168,0,5), new IP(192,168,0,1), 0);
+            StandardPC raymondPC = new StandardPC(13, new IP(192,168,1,6), new IP(192,168,1,1), 0);
+
             StandardWEBServer WEB = new StandardWEBServer(12, new IP(192,168,1,5), new IP(192,168,1,1), 0);
 
-            Standard24Switch srA = new Standard24Switch();
-            Standard24Hub srB = new Standard24Hub();
+            Standard24ETHSwitch srA = new Standard24ETHSwitch();
+            Standard24ETHHub srB = new Standard24ETHHub();
 
             central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(0,0,0,0), 1);
             central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(0,0,0,0), 1);
@@ -59,9 +61,11 @@ public class JUnit_networking
             Actions.connect(central, srA, LinkTypes.ETH);
             Actions.connect(central, srB, LinkTypes.ETH);
             Actions.connect(jeanLuc_PC, srA, LinkTypes.ETH);
+            Actions.connect(raymondPC, srB, LinkTypes.ETH);
             Actions.connect(WEB, srB, LinkTypes.ETH);
 
-            jeanLuc_PC.launchRequest(PacketTypes.WEB, new IP(192,168,1,5));
+            int count = 0;
+            long time = System.currentTimeMillis();
 
             while(true)
             {
@@ -73,6 +77,7 @@ public class JUnit_networking
                 srB.treat();
                 central.treat();
                 jeanLuc_PC.treat();
+                raymondPC.treat();
                 WEB.treat();
 
                 A.validateStack();
@@ -83,14 +88,33 @@ public class JUnit_networking
                 srB.validateStack();
                 central.validateStack();
                 jeanLuc_PC.validateStack();
+                raymondPC.validateStack();
                 WEB.validateStack();
 
-                Thread.sleep(1000);
+                //Thread.sleep(500);
+
+                if(!jeanLuc_PC.waitsForSomething()) {
+                    jeanLuc_PC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
+                    count++;
+                }
+                if(!raymondPC.waitsForSomething()) {
+                    raymondPC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
+                }
+
+              /*  if(count ==1001)
+                {
+                    System.out.println("1000 transactions in "+(System.currentTimeMillis()-time)+" ms.");
+                    count=0;
+                    time=System.currentTimeMillis();
+                }*/
+
+
+
             }
         } catch (BadCallException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+       /* } catch (InterruptedException e) {
+            e.printStackTrace();*/
         }
     }
 

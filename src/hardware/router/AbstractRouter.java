@@ -7,7 +7,7 @@ import enums.PacketTypes;
 import exceptions.BadCallException;
 import hardware.ARPTable;
 import hardware.AbstractHardware;
-import link.Link;
+import hardware.Link;
 import packet.IP;
 import packet.Packet;
 
@@ -92,7 +92,7 @@ public abstract class AbstractRouter extends AbstractHardware
                         if(i.equals(p.dst_addr))
                         {
                             this.send(new Packet(p.src_addr,
-                                    i, MACinterfaces.get(IPinterfaces.indexOf(i)), p.src_mac, PacketTypes.ARP, true, true), p.lastPort);
+                                    i, MACinterfaces.get(IPinterfaces.indexOf(i)), p.src_mac, PacketTypes.ARP, true, false), p.lastPort);
                             break;
                         }
                     }
@@ -101,6 +101,9 @@ public abstract class AbstractRouter extends AbstractHardware
             }
 
             if(!MACinterfaces.contains(p.dst_mac) && !MACinterfaces.contains(p.src_mac) ) //S'il ne m'est pas destiné, je l'ignore
+                continue;
+
+            if(routingTable.isBroadcast(p)) //Si c'est un broadcast, je l'ignore
                 continue;
 
             if(IPinterfaces.contains(p.dst_addr)) //S'il m'est destiné (en bout de chaîne)
@@ -132,7 +135,7 @@ public abstract class AbstractRouter extends AbstractHardware
                     ip = (IP)route.get(1);
                 this.send(new Packet(ip,
                         IPinterfaces.get((int)route.get(0)),
-                        MACinterfaces.get((int)route.get(0)), -1, PacketTypes.ARP, false, true), (int)route.get(0));
+                        MACinterfaces.get((int)route.get(0)), -1, PacketTypes.ARP, false, false), (int)route.get(0));
                 continue;
             }
 
