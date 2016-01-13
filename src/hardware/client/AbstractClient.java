@@ -20,7 +20,7 @@ public abstract class AbstractClient extends AbstractRouter
     protected ArrayList<Integer> numberOfPackets = new ArrayList<>();
 
     /**
-     * Constructeur à appeller avec super()
+     * Constructeur à appeller
      *
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      * @param overflow       maximum de paquets supportables dans son tampon de traitement
@@ -31,7 +31,19 @@ public abstract class AbstractClient extends AbstractRouter
                 default_gateway, default_port);
         this.IP = IP;
         this.MAC = MAC;
+    }
 
+    /**
+     * Constructeur à appeller
+     *
+     * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param overflow       maximum de paquets supportables dans son tampon de traitement
+     */
+    public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC, IP default_gateway, int default_port) throws BadCallException {
+        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(),
+                default_gateway, default_port);
+        this.MAC = MAC;
+        this.DHCPClient();
     }
 
     @Override
@@ -74,7 +86,7 @@ public abstract class AbstractClient extends AbstractRouter
         {
             futureStack.add(new Packet(destination, this.IP, this.MAC, -1, PacketTypes.WEB, false, false));
             waitingFrom.add(destination);
-            numberOfPackets.add(5);
+            numberOfPackets.add(PacketTypes.WEB.size);
             //System.out.println(this.IP+" : Envoi requête WEB vers "+destination);
         }
     }
@@ -82,6 +94,12 @@ public abstract class AbstractClient extends AbstractRouter
     public boolean waitsForSomething()
     {
         return !waitingFrom.isEmpty();
+    }
+
+    private void DHCPClient()
+    {
+        System.err.println(this+" : DHCP PAS IMPLEMENTE !! ADRESSAGE STATIQUE OBLIGATOIRE");
+        //TODO ~ DO THE DHCP ~ (WUB WUB WUB)
     }
 
 }

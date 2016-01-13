@@ -167,6 +167,18 @@ public abstract class AbstractHardware
     {
         this.stack = this.futureStack;
         this.futureStack = new ArrayList<>();
+
+        if(overflowValue < stack.size())
+        {
+            System.out.println(this+" : APPAREIL SATURE DE "+(stack.size()-overflowValue)+" PAQUETS !");
+            while(stack.size() > overflowValue)
+            {
+                futureStack.add(stack.get(stack.size()-1));
+                stack.remove(stack.size()-1);
+            }
+                
+        }
+
     }
 
     /**
