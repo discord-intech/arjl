@@ -4,7 +4,7 @@ public enum PacketTypes
 {
     NULL(1), //Placeholder
     DHCP(1),
-    WEB(50),
+    WEB(5),
     ARP(1),
     OSPF(3),
     RIP(2),

@@ -162,6 +162,7 @@ public abstract class AbstractHardware
 
     /**
      * Permet de valider le nouveau stack une fois tous les stacks de tous les appareils traités
+     * ainsi que de détecter une évventuelle congestion
      */
     public void validateStack()
     {
@@ -173,12 +174,10 @@ public abstract class AbstractHardware
             System.out.println(this+" : APPAREIL SATURE DE "+(stack.size()-overflowValue)+" PAQUETS !");
             while(stack.size() > overflowValue)
             {
-                futureStack.add(stack.get(stack.size()-1));
+                //futureStack.add(stack.get(stack.size()-1)); //optimal : on garde les paquets
                 stack.remove(stack.size()-1);
             }
-                
         }
-
     }
 
     /**

@@ -110,7 +110,7 @@ public class RoutingTable
         if(res.get(1).equals(new IP(0,0,0,0)))
             return false;
 
-        IP mask = masks.get(subnets.indexOf((IP)res.get(1)));
+        IP mask = masks.get(gateways.indexOf((IP)res.get(1)));
         if(p.dst_addr.isBroadcast(mask))
             return true;
         return false;

@@ -91,7 +91,7 @@ public class JUnit_networking
                 raymondPC.validateStack();
                 WEB.validateStack();
 
-                Thread.sleep(500);
+                Thread.sleep(1);
 
                 if(!jeanLuc_PC.waitsForSomething()) {
                     jeanLuc_PC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
