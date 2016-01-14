@@ -1,4 +1,4 @@
-package hardware.switchs;
+package table;
 
 import java.util.ArrayList;
 

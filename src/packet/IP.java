@@ -1,5 +1,7 @@
 package packet;
 
+import java.util.ArrayList;
+
 /**
  * Classe servant de template pour les adresses IPv4
  */
@@ -53,6 +55,21 @@ public class IP
         return false;
     }
 
+    public static ArrayList<IP> getSubnetIPs(IP subnet)
+    {
+        ArrayList<IP> res = new ArrayList<>();
+
+        for(int i=subnet.o1 ; i<256 ; i++)
+            for(int j=subnet.o2 ; i<256 ; i++)
+                for(int k=subnet.o3 ; i<256 ; i++)
+                    for(int l=subnet.o4 ; i<256 ; i++)
+                        res.add((new IP(i,j,k,l)));
+
+        return res;
+
+
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -65,6 +82,7 @@ public class IP
     {
         return o1+"."+o2+"."+o3+"."+o4;
     }
+
 
     public boolean isBroadcast(IP mask)
     {

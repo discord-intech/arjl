@@ -31,7 +31,6 @@ public abstract class AbstractServer extends AbstractRouter
                 default_gateway, default_port);
         this.type=type;
         this.MAC = MAC;
-        this.DHCPClient();
     }
 
     /**
@@ -78,11 +77,5 @@ public abstract class AbstractServer extends AbstractRouter
                     IPinterfaces.get(p.lastPort),
                     MACinterfaces.get(p.lastPort), p.src_mac, PacketTypes.WEB, true, false), p.lastPort);
         }
-    }
-
-    private void DHCPClient()
-    {
-        System.err.println(this+" : DHCP PAS IMPLEMENTE !! ADRESSAGE STATIQUE OBLIGATOIRE");
-        //TODO ~ DO THE DHCP ~ (WUB WUB WUB)
     }
 }

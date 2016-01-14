@@ -1,4 +1,4 @@
-package hardware;
+package table;
 
 
 import packet.IP;

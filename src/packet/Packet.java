@@ -1,6 +1,9 @@
 package packet;
 
 import enums.PacketTypes;
+import packet.data.DHCPData;
+
+import java.util.Random;
 
 public class Packet
 {
@@ -10,6 +13,8 @@ public class Packet
     public IP src_addr;
     public int src_mac;
     private int TTL=128;
+
+    public static final Random RNG = new Random();
 
     private IP NHR;
     public boolean tracked = false;
@@ -34,6 +39,9 @@ public class Packet
         this.type=type;
         this.isResponse = isResponse;
         this.NHR = src_addr;
+
+        if(type == PacketTypes.DHCP)
+            this.data = new DHCPData(Packet.RNG.nextInt(65533), src_mac);
     }
 
     public Packet(Packet p)
@@ -46,6 +54,8 @@ public class Packet
         this.isResponse = p.isResponse;
         this.NHR = p.getNHR();
         this.tracked=p.tracked;
+        this.data=p.getData();
+        this.TTL = p.getTTL();
 
     }
 
@@ -60,6 +70,8 @@ public class Packet
         this.NHR = src_addr;
         this.tracked=tracked;
 
+        if(type == PacketTypes.DHCP)
+            this.data = new DHCPData(Packet.RNG.nextInt(65533), src_mac);
     }
 
     public Packet(Packet p, boolean tracked)
@@ -72,6 +84,8 @@ public class Packet
         this.isResponse = p.isResponse;
         this.NHR = p.getNHR();
         this.tracked=tracked;
+        this.data=p.getData();
+        this.TTL = p.getTTL();
     }
 
     public PacketTypes getType() {

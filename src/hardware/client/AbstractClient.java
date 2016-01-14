@@ -39,11 +39,10 @@ public abstract class AbstractClient extends AbstractRouter
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
      * @param overflow       maximum de paquets supportables dans son tampon de traitement
      */
-    public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC, IP default_gateway, int default_port) throws BadCallException {
-        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(),
-                default_gateway, default_port);
+    public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC) throws BadCallException {
+        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}},
+                new ArrayList<IP>());
         this.MAC = MAC;
-        this.DHCPClient();
     }
 
     @Override
@@ -94,12 +93,6 @@ public abstract class AbstractClient extends AbstractRouter
     public boolean waitsForSomething()
     {
         return !waitingFrom.isEmpty();
-    }
-
-    private void DHCPClient()
-    {
-        System.err.println(this+" : DHCP PAS IMPLEMENTE !! ADRESSAGE STATIQUE OBLIGATOIRE");
-        //TODO ~ DO THE DHCP ~ (WUB WUB WUB)
     }
 
 }

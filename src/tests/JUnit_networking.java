@@ -7,6 +7,7 @@ import exceptions.BadCallException;
 import hardware.client.StandardPC;
 import hardware.hub.Standard24ETHHub;
 import hardware.router.Standard2ETHRouter;
+import hardware.server.DHCPServer;
 import hardware.server.StandardWEBServer;
 import hardware.switchs.Standard24ETHSwitch;
 import org.junit.Test;
@@ -43,10 +44,11 @@ public class JUnit_networking
                     new ArrayList<IP>(){{add(new IP(192,168,0,3));add(new IP(192,168,6,1));}},
                     new IP(192,168,0,1), 0);
 
-            StandardPC jeanLuc_PC = new StandardPC(11, new IP(192,168,0,5), new IP(192,168,0,1), 0);
-            StandardPC raymondPC = new StandardPC(13, new IP(192,168,1,6), new IP(192,168,1,1), 0);
+            StandardPC jeanLuc_PC = new StandardPC(11, new IP(192,168,0,5), new IP(192,168,0,1));
+            StandardPC raymondPC = new StandardPC(13, new IP(192,168,1,6), new IP(192,168,1,1));
 
             StandardWEBServer WEB = new StandardWEBServer(12, new IP(192,168,1,5), new IP(192,168,1,1), 0);
+            DHCPServer dhcp = new DHCPServer(22, new IP(192,168,1,8), new IP(192,168,1,1), 0);
 
             Standard24ETHSwitch srA = new Standard24ETHSwitch();
             Standard24ETHHub srB = new Standard24ETHHub();
@@ -63,6 +65,13 @@ public class JUnit_networking
             Actions.connect(jeanLuc_PC, srA, LinkTypes.ETH);
             Actions.connect(raymondPC, srB, LinkTypes.ETH);
             Actions.connect(WEB, srB, LinkTypes.ETH);
+            Actions.connect(dhcp, srB, LinkTypes.ETH);
+
+            central.setDHCPRelay(new IP(192,168,1,8));
+
+            StandardPC DHCPtester = new StandardPC(21);
+            Actions.connect(DHCPtester, srA, LinkTypes.ETH);
+            DHCPtester.DHCPClient();
 
             int count = 0;
             long time = System.currentTimeMillis();
@@ -79,6 +88,8 @@ public class JUnit_networking
                 jeanLuc_PC.treat();
                 raymondPC.treat();
                 WEB.treat();
+                DHCPtester.treat();
+                dhcp.treat();
 
                 A.validateStack();
                 B.validateStack();
@@ -90,8 +101,10 @@ public class JUnit_networking
                 jeanLuc_PC.validateStack();
                 raymondPC.validateStack();
                 WEB.validateStack();
+                DHCPtester.validateStack();
+                dhcp.validateStack();
 
-                Thread.sleep(1);
+                Thread.sleep(500);
 
                 if(!jeanLuc_PC.waitsForSomething()) {
                     jeanLuc_PC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));

@@ -1,4 +1,4 @@
-package hardware.router;
+package table;
 
 import packet.IP;
 import packet.Packet;
@@ -115,5 +115,15 @@ public class RoutingTable
             return true;
         return false;
 
+    }
+
+    public IP getRelatedMask(IP subnet)
+    {
+        for(IP i : subnets)
+        {
+            if(i.equals(subnet))
+                return masks.get(subnets.indexOf(i));
+        }
+        return null;
     }
 }
