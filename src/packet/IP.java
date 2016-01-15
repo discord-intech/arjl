@@ -9,10 +9,10 @@ import java.util.ArrayList;
 public class IP
 {
 
-    protected int o1;
-    protected int o2;
-    protected int o3;
-    protected int o4;
+    public int o1;
+    public int o2;
+    public int o3;
+    public int o4;
 
 
     public IP(int o1, int o2, int o3, int o4)
@@ -55,15 +55,15 @@ public class IP
         return false;
     }
 
-    public static ArrayList<IP> getSubnetIPs(IP subnet)
+    public static ArrayList<IP> getSubnetIPs(IP subnet, IP mask)
     {
         ArrayList<IP> res = new ArrayList<>();
 
-        for(int i=subnet.o1 ; i<256 ; i++)
-            for(int j=subnet.o2 ; i<256 ; i++)
-                for(int k=subnet.o3 ; i<256 ; i++)
-                    for(int l=subnet.o4 ; i<256 ; i++)
-                        res.add((new IP(i,j,k,l)));
+        for(int i=0 ; i<(256-(subnet.o1 | mask.o1)) ; i++)
+            for(int j=0 ; i<(256-(subnet.o2 | mask.o2)) ; i++)
+                for(int k=0 ; i<(256-(subnet.o3 | mask.o3)) ; i++)
+                    for(int l=0 ; i<(256-(subnet.o4 | mask.o4)) ; i++)
+                        res.add((new IP(subnet.o1+i,subnet.o2+j,subnet.o3+k,subnet.o4+l)));
 
         return res;
 

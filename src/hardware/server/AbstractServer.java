@@ -15,8 +15,6 @@ import java.util.ArrayList;
 public abstract class AbstractServer extends AbstractRouter
 {
 
-    protected PacketTypes type;
-    protected IP IP;
     protected int MAC;
 
     /**

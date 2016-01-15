@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 public abstract class AbstractClient extends AbstractRouter
 {
-    protected IP IP;
     protected int MAC;
 
     protected ArrayList<IP> waitingFrom = new ArrayList<>();

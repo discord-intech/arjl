@@ -119,10 +119,10 @@ public class RoutingTable
 
     public IP getRelatedMask(IP subnet)
     {
-        for(IP i : subnets)
+        for(IP i : gateways)
         {
             if(i.equals(subnet))
-                return masks.get(subnets.indexOf(i));
+                return masks.get(gateways.indexOf(i));
         }
         return null;
     }
