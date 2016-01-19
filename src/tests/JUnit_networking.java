@@ -53,8 +53,8 @@ public class JUnit_networking
             Standard24ETHSwitch srA = new Standard24ETHSwitch();
             Standard24ETHHub srB = new Standard24ETHHub();
 
-            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(0,0,0,0), 1);
-            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(0,0,0,0), 1);
+            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(192,168,0,1), 1);
+            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(192,168,1,1), 1);
 
             Actions.connect(A, srA, LinkTypes.ETH);
             Actions.connect(B, srB, LinkTypes.ETH);
@@ -66,6 +66,10 @@ public class JUnit_networking
             Actions.connect(raymondPC, srB, LinkTypes.ETH);
             Actions.connect(WEB, srB, LinkTypes.ETH);
             Actions.connect(dhcp, srB, LinkTypes.ETH);
+
+            dhcp.addRange(new IP(192,168,0,0), new IP(192,168,0,30), new IP(192,168,0,60));
+            dhcp.addRange(new IP(192,168,1,0), new IP(192,168,1,30), new IP(192,168,1,60));
+
 
             central.setDHCPRelay(new IP(192,168,1,8));
 

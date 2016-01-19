@@ -1,6 +1,7 @@
 package hardware.router;
 
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import enums.Bandwidth;
 import enums.LinkTypes;
 import enums.PacketTypes;
@@ -29,6 +30,9 @@ public abstract class AbstractRouter extends AbstractHardware
     protected int DHCPidentifier;
     protected boolean isDHCPRelay = false;
     protected IP DHCPaddress;
+
+    protected PacketTypes type=PacketTypes.NULL;
+    protected IP IP;
 
     protected boolean awaitingForIP = false;
 
@@ -112,6 +116,7 @@ public abstract class AbstractRouter extends AbstractHardware
                         && ((DHCPData)p.getData()).isOK())
                 {
                     this.IPinterfaces.add(((DHCPData) p.getData()).getChosen());
+                    this.IP = ((DHCPData) p.getData()).getChosen();
                     ((DHCPData) p.getData()).setACK();
                     this.routingTable.addRule(0, this.IPinterfaces.get(0).getSubnet(((DHCPData) p.getData()).getSubnetInfo().get(1)),
                             ((DHCPData) p.getData()).getSubnetInfo().get(1), ((DHCPData) p.getData()).getSubnetInfo().get(0), 255);
@@ -123,7 +128,7 @@ public abstract class AbstractRouter extends AbstractHardware
                     awaitingForIP=false;
                     continue;
                 }
-                else if(this.isDHCPRelay)
+                else if(this.isDHCPRelay && this.type != PacketTypes.DHCP)
                 {
                     if(((DHCPData)p.getData()).getSubnetInfo().get(1) == null)
                     {
@@ -196,7 +201,7 @@ public abstract class AbstractRouter extends AbstractHardware
 
             route = routingTable.routeMe(p.dst_addr); //route={port de redirection ; IP du NHR}
             IP ip;
-            if(route.get(1).equals(new IP(0,0,0,0))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
+            if(IPinterfaces.contains(route.get(1))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
             {
                 mac = arp.findARP(p.dst_addr);
                 ip = p.dst_addr;
@@ -211,7 +216,7 @@ public abstract class AbstractRouter extends AbstractHardware
             if(mac == -1)
             {
                 waitingForARP.add(p);
-                if(route.get(1).equals(new IP(0,0,0,0))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
+                if(IPinterfaces.contains(route.get(1))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
                     ip = p.dst_addr;
                 else
                     ip = (IP)route.get(1);
