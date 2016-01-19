@@ -10,6 +10,9 @@ import packet.Packet;
 
 import java.util.ArrayList;
 
+/**
+ * Classe abstraite définissant les hubs
+ */
 public abstract class AbstractHub extends AbstractHardware
 {
     /**
@@ -17,6 +20,7 @@ public abstract class AbstractHub extends AbstractHardware
      *
      * @param port_types     liste des types de liens connectables
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param overflow limite en capacité de traitement (simule la congestion sur un HUB)
      */
     public AbstractHub(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) throws BadCallException {
         super(port_types, port_bandwidth, overflow);

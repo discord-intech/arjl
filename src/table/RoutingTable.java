@@ -126,4 +126,9 @@ public class RoutingTable
         }
         return null;
     }
+
+    public void setDefaultGateway(IP gate)
+    {
+        this.gateways.set(0, gate);
+    }
 }

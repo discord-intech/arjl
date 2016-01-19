@@ -10,16 +10,34 @@ import table.DHCPTable;
 
 import java.util.ArrayList;
 
+/**
+ * Classe définisssant un serveur DHCP classique par ethernet (1G)
+ */
 public class DHCPServer extends AbstractServer
 {
 
+    /**
+     * Les IPs déjà adressées
+     */
     ArrayList<IP> takenIPs;
+    /**
+     * La liste des transactions en cours, repérées par leur identifiant
+     */
     ArrayList<Integer> identifiers = new ArrayList<>();
 
+    /**
+     * La table d'adressage
+     */
     DHCPTable DHCPtable = new DHCPTable();
 
-    public DHCPServer(int MAC, packet.IP IP, packet.IP default_gateway, int default_port) throws BadCallException {
-        super(LinkTypes.ETH, Bandwidth.ETH_1G, 30, MAC, IP, default_gateway, default_port, PacketTypes.DHCP);
+    /**
+     * Constructeur
+     * @param MAC la MAC du serveur
+     * @param IP l'IP du serveur
+     * @param default_gateway la passerelle par défaut, en général un relai DHCP
+     */
+    public DHCPServer(int MAC, packet.IP IP, packet.IP default_gateway) throws BadCallException {
+        super(LinkTypes.ETH, Bandwidth.ETH_1G, 30, MAC, IP, default_gateway, 0, PacketTypes.DHCP);
         takenIPs = new ArrayList<IP>();
         takenIPs.add(IP);
         setDHCPRelay(IP);
@@ -77,6 +95,12 @@ public class DHCPServer extends AbstractServer
         }
     }
 
+    /**
+     * Ajoute une plage adressable
+     * @param subnet le sous-réseau associé
+     * @param min IP mini
+     * @param max IP maxi
+     */
     public void addRange(IP subnet, IP min, IP max)
     {
         IP[] range = new IP[2];

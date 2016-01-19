@@ -6,6 +6,9 @@ import exceptions.BadCallException;
 
 import java.util.ArrayList;
 
+/**
+ * Classe définissant un HUB classique à 24 ports Gigabit Ethernet
+ */
 public class Standard24ETHHub extends AbstractHub
 {
 

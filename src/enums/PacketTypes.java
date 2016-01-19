@@ -1,5 +1,8 @@
 package enums;
 
+/**
+ * Enul des différents types de paquets avec le nombre nécéssaire pour effecteur une transaction
+ */
 public enum PacketTypes
 {
     NULL(1), //Placeholder

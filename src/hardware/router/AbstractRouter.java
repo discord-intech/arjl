@@ -1,21 +1,24 @@
 package hardware.router;
 
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import enums.Bandwidth;
 import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
-import packet.data.DHCPData;
-import table.ARPTable;
 import hardware.AbstractHardware;
 import hardware.Link;
 import packet.IP;
 import packet.Packet;
+import packet.data.DHCPData;
+import table.ARPTable;
 import table.RoutingTable;
 
 import java.util.ArrayList;
 
+/**
+ * Classe abstraite définissant les routeurs (serveurs et clients en héritant)
+ * TODO DOC
+ */
 public abstract class AbstractRouter extends AbstractHardware
 {
 
@@ -118,8 +121,7 @@ public abstract class AbstractRouter extends AbstractHardware
                     this.IPinterfaces.add(((DHCPData) p.getData()).getChosen());
                     this.IP = ((DHCPData) p.getData()).getChosen();
                     ((DHCPData) p.getData()).setACK();
-                    this.routingTable.addRule(0, this.IPinterfaces.get(0).getSubnet(((DHCPData) p.getData()).getSubnetInfo().get(1)),
-                            ((DHCPData) p.getData()).getSubnetInfo().get(1), ((DHCPData) p.getData()).getSubnetInfo().get(0), 255);
+                    this.routingTable.setDefaultGateway(((DHCPData) p.getData()).getSubnetInfo().get(0));
                     p.dst_addr = ((DHCPData)p.getData()).getDHCPaddr();
                     p.src_addr = IPinterfaces.get(0);
                     p.dst_mac = p.src_mac;

@@ -117,6 +117,9 @@ public class JUnit_networking
                 if(!raymondPC.waitsForSomething()) {
                     raymondPC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
                 }
+                if(!DHCPtester.waitsForSomething()) {
+                    DHCPtester.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
+                }
 
               /*  if(count ==1001)
                 {

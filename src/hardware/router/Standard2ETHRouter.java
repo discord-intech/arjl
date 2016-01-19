@@ -8,13 +8,18 @@ import packet.IP;
 
 import java.util.ArrayList;
 
+/**
+ * Classe définissant un routeur basique à 2 ports Gigabit Ethernet
+ */
 public class Standard2ETHRouter extends AbstractRouter
 {
 
     /**
-     * Constructeur à appeller avec super()
-     * @param MACinterfaces
-     * @param IPinterfaces
+     * Constructeur à appeller
+     * @param MACinterfaces les MACs par port
+     * @param IPinterfaces les IPs par port
+     * @param default_gateway la passerelle par défaut (pour le subnet 0.0.0.0)
+     * @param default_port le port par défaut (pour le subnet 0.0.0.0)
      */
     public Standard2ETHRouter(ArrayList<Integer> MACinterfaces, ArrayList<IP> IPinterfaces, IP default_gateway, int default_port) throws BadCallException {
         //Pour initialiser les appareils, JAVA me force à utiliser les classes anonymes, c'est juste horrible...

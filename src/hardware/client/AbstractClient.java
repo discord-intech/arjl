@@ -11,23 +11,39 @@ import packet.Packet;
 
 import java.util.ArrayList;
 
+/**
+ * Classe abstraite définissant les clients (end-user)
+ */
 public abstract class AbstractClient extends AbstractRouter
 {
+    /**
+     * La MAC de l'appareil
+     */
     protected int MAC;
 
+    /**
+     * Liste des différentes requètes qui attendent une réponse complètes
+     */
     protected ArrayList<IP> waitingFrom = new ArrayList<>();
+    /**
+     * Lié à waitingFrom, nombres de paquets attendus restants
+     */
     protected ArrayList<Integer> numberOfPackets = new ArrayList<>();
 
     /**
      * Constructeur à appeller
      *
-     * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param port_type le type de connectique
+     * @param port_bandwidth la bande passante de la connectique
      * @param overflow       maximum de paquets supportables dans son tampon de traitement
+     * @param MAC la mac de l'appareil
+     * @param IP l'IP statique
+     * @param default_gateway la passerelle par défaut
      */
     public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC,
-                          IP IP, IP default_gateway, int default_port) throws BadCallException {
+                          IP IP, IP default_gateway) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(){{add(IP);}},
-                default_gateway, default_port);
+                default_gateway, 0);
         this.IP = IP;
         this.MAC = MAC;
     }
@@ -35,8 +51,10 @@ public abstract class AbstractClient extends AbstractRouter
     /**
      * Constructeur à appeller
      *
-     * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param port_type le type de connectique
+     * @param port_bandwidth la bande passante de la connectique
      * @param overflow       maximum de paquets supportables dans son tampon de traitement
+     * @param MAC  la mac de l'appareil
      */
     public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}},
@@ -78,8 +96,17 @@ public abstract class AbstractClient extends AbstractRouter
         }
     }
 
+    /**
+     * Lance une requête spécifiée
+     * @param type le type de paquet, donc le type de requête
+     * @param destination l'IP du destinataire
+     */
     public synchronized void launchRequest(PacketTypes type, IP destination)
     {
+        if(this.awaitingForIP)
+        {
+            return;
+        }
         if(type == PacketTypes.WEB)
         {
             futureStack.add(new Packet(destination, this.IP, this.MAC, -1, PacketTypes.WEB, false, false));
@@ -89,6 +116,9 @@ public abstract class AbstractClient extends AbstractRouter
         }
     }
 
+    /**
+     * Renvoie true si l'appareil attends la réponse d'un appareil
+     */
     public boolean waitsForSomething()
     {
         return !waitingFrom.isEmpty();
