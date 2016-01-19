@@ -67,7 +67,7 @@ public abstract class AbstractClient extends AbstractRouter
     protected void treatData(Packet p) throws BadCallException {
         if (p.isResponse && p.getType() == PacketTypes.WEB && waitingFrom.contains(p.src_addr)) //DEBUG !!!
         {
-            //System.out.println(this.IP + " : reçu WEB de " + p.src_addr);
+            System.out.println(this.IP + " : reçu WEB de " + p.src_addr);
             if(numberOfPackets.get(waitingFrom.indexOf(p.src_addr)) == 1)
             {
                 numberOfPackets.remove(waitingFrom.indexOf(p.src_addr));

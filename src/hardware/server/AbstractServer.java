@@ -71,7 +71,7 @@ public abstract class AbstractServer extends AbstractRouter
     protected void treatData(Packet p) throws BadCallException {
         if ((this.type == PacketTypes.WEB) && (p.getType() == PacketTypes.WEB)) //DEBUG !!!
         {
-            //System.out.println(this.IP + " : reçu WEB de " + p.src_addr);
+            System.out.println(this.IP + " : reçu WEB de " + p.src_addr);
             for(int i= 0; i<PacketTypes.WEB.size ; i++)
                 this.send(new Packet(p.src_addr,
                     IPinterfaces.get(p.lastPort),
