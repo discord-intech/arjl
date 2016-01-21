@@ -5,11 +5,14 @@ import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
 
+/**
+ * Classe définissant un serveur WEB classique
+ */
 public class StandardWEBServer extends AbstractServer
 {
 
     /**
-     * Constructeur à appeller avec super()
+     * Constructeur
      *
      * @param MAC
      * @param IP

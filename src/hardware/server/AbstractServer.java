@@ -19,7 +19,7 @@ public abstract class AbstractServer extends AbstractRouter
 {
 
     /**
-     * La MAC su serveur
+     * La MAC du serveur
      */
     protected int MAC;
 

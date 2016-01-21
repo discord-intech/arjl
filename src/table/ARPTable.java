@@ -5,11 +5,22 @@ import packet.IP;
 
 import java.util.ArrayList;
 
+/**
+ * Classe définissant une table ARP
+ */
 public class ARPTable
 {
+	/** Les IPs */
     ArrayList<IP> ips = new ArrayList<>();
+    
+    /** Les MACs corrélées aux IPs */
     ArrayList<Integer> macs = new ArrayList<>();
 
+    /**
+     * Ajoute une règle ARP
+     * @param address l'adresse IP
+     * @param mac la MAC associée
+     */
     public synchronized void addRule(IP address, int mac)
     {
         if(macs.contains(mac))

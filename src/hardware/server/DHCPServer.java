@@ -46,6 +46,7 @@ public class DHCPServer extends AbstractServer
     @Override
     protected void treatData(Packet p) throws BadCallException
     {
+    	//Si le paquet est un DHCPDISCOVER
         if((p.getType() == PacketTypes.DHCP) &&
             !(((DHCPData)p.getData()).getChosen() == null) && identifiers.contains(((DHCPData) p.getData()).identifier)
                 && !((DHCPData)p.getData()).isACK())
@@ -61,7 +62,7 @@ public class DHCPServer extends AbstractServer
                send(p, p.lastPort);
             }
         }
-
+        //Si le paquet est une requête d'IP
         else if ((p.getType() == PacketTypes.DHCP) && !((DHCPData)p.getData()).isACK())
         {
             //System.out.println(this.IP + " : reçu DHCP de " + p.src_addr);
@@ -88,7 +89,9 @@ public class DHCPServer extends AbstractServer
             this.send(p, p.lastPort);
             this.identifiers.add(((DHCPData) p.getData()).identifier);
         }
-        else if((p.getType() == PacketTypes.DHCP) && ((DHCPData)p.getData()).isACK())
+        //Si c'est l'ACK d'une machine
+        else if((p.getType() == PacketTypes.DHCP) && ((DHCPData)p.getData()).isACK() 
+        		&& identifiers.contains(((DHCPData)p.getData()).identifier)))
         {
             identifiers.remove(identifiers.indexOf(((DHCPData) p.getData()).identifier));
             System.out.println("DHCP success !! "+p.src_addr);
