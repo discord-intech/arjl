@@ -11,9 +11,15 @@ import table.SwitchingTable;
 
 import java.util.ArrayList;
 
+/**
+ * Classe abstraite définissant les switchs à apprentissage
+ */
 public abstract class AbstractSwitch extends AbstractHardware
 {
 
+    /**
+     * Table de commutation
+     */
     protected SwitchingTable switchingTable = new SwitchingTable();
 
     /**
@@ -21,6 +27,7 @@ public abstract class AbstractSwitch extends AbstractHardware
      *
      * @param port_types     liste des types de liens connectables
      * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param overflow       capacité de traitement de l'appareil
      */
     public AbstractSwitch(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) throws BadCallException {
         super(port_types, port_bandwidth, overflow);

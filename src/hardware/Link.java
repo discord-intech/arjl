@@ -4,7 +4,6 @@ package hardware;
 import enums.Bandwidth;
 import enums.LinkTypes;
 import exceptions.BadCallException;
-import hardware.AbstractHardware;
 
 import java.util.ArrayList;
 
@@ -14,9 +13,13 @@ import java.util.ArrayList;
 public class Link
 {
 
+    /** Le premier appareil */
     private AbstractHardware hard1;
+    /** Le second appareil */
     private AbstractHardware hard2;
+    /** La bande passante du lien */
     private Bandwidth bandwidth;
+    /** Le type de lien (ETH, Serial,...) */
     private LinkTypes type;
 
     /** Permet de compter les liens instanciés */
@@ -26,6 +29,8 @@ public class Link
      * Constructeur de lien
      * @param hard1 premier appareil
      * @param hard2 deuxième appareil
+     * @param linktype type de lien
+     * @param bandwidth bande passante
      */
     public Link(AbstractHardware hard1, AbstractHardware hard2, LinkTypes linktype, Bandwidth bandwidth)
     {

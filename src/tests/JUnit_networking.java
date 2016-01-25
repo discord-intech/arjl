@@ -47,8 +47,8 @@ public class JUnit_networking
             StandardPC jeanLuc_PC = new StandardPC(11, new IP(192,168,0,5), new IP(192,168,0,1));
             StandardPC raymondPC = new StandardPC(13, new IP(192,168,1,6), new IP(192,168,1,1));
 
-            StandardWEBServer WEB = new StandardWEBServer(12, new IP(192,168,1,5), new IP(192,168,1,1), 0);
-            DHCPServer dhcp = new DHCPServer(22, new IP(192,168,1,8), new IP(192,168,1,1), 0);
+            StandardWEBServer WEB = new StandardWEBServer(12, new IP(192,168,1,5), new IP(192,168,1,1));
+            DHCPServer dhcp = new DHCPServer(22, new IP(192,168,1,8), new IP(192,168,1,1));
 
             Standard24ETHSwitch srA = new Standard24ETHSwitch();
             Standard24ETHHub srB = new Standard24ETHHub();

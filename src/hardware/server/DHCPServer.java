@@ -37,7 +37,7 @@ public class DHCPServer extends AbstractServer
      * @param default_gateway la passerelle par défaut, en général un relai DHCP
      */
     public DHCPServer(int MAC, packet.IP IP, packet.IP default_gateway) throws BadCallException {
-        super(LinkTypes.ETH, Bandwidth.ETH_1G, 30, MAC, IP, default_gateway, 0, PacketTypes.DHCP);
+        super(LinkTypes.ETH, Bandwidth.ETH_1G, 30, MAC, IP, default_gateway, PacketTypes.DHCP);
         takenIPs = new ArrayList<IP>();
         takenIPs.add(IP);
         setDHCPRelay(IP);
@@ -91,7 +91,7 @@ public class DHCPServer extends AbstractServer
         }
         //Si c'est l'ACK d'une machine
         else if((p.getType() == PacketTypes.DHCP) && ((DHCPData)p.getData()).isACK() 
-        		&& identifiers.contains(((DHCPData)p.getData()).identifier)))
+        		&& identifiers.contains(((DHCPData)p.getData()).identifier))
         {
             identifiers.remove(identifiers.indexOf(((DHCPData) p.getData()).identifier));
             System.out.println("DHCP success !! "+p.src_addr);

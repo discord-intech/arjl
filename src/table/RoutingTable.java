@@ -6,15 +6,20 @@ import packet.Packet;
 import java.util.ArrayList;
 
 /**
- * Classe définissant les tables de routages, fonctionne selon la règle du plus petit masque
+ * Classe définissant les tables de routages, fonctionne selon la règle du plus grand masque
  */
 public class RoutingTable
 {
 
+    /** les sous-réseaux */
     private ArrayList<IP> subnets = new ArrayList<>();
+    /** les masques de sous-réseau */
     private ArrayList<IP> masks = new ArrayList<>();
-    private ArrayList<IP> gateways = new ArrayList<>(); // Ce sont des MACs !
+    /** les passerelles (ou NHR) */
+    private ArrayList<IP> gateways = new ArrayList<>();
+    /** les numéros de port associés */
     private ArrayList<Integer> port_numbers = new ArrayList<>();
+    /** Métrique de la route */
     private ArrayList<Integer> metric = new ArrayList<>();
 
     /**
@@ -43,6 +48,9 @@ public class RoutingTable
         metric.add(255);
     }
 
+    /**
+     * Ajoute une règle
+     */
     public synchronized void addRule(int port_number, IP subnet, IP mask, IP gateway, int metric)
     {
         port_numbers.add(port_number);
@@ -103,6 +111,10 @@ public class RoutingTable
         return res;
     }
 
+    /**
+     * Si le paquet est un broadcast
+     * @param p le paquet
+     */
     public boolean isBroadcast(Packet p)
     {
         ArrayList<Object> res = this.routeMe(p.dst_addr);
@@ -117,6 +129,10 @@ public class RoutingTable
 
     }
 
+    /**
+     * Revoie le masque associé à un sous-réseau listé dans la table
+     * @param subnet le masque
+     */
     public IP getRelatedMask(IP subnet)
     {
         for(IP i : gateways)
@@ -127,6 +143,10 @@ public class RoutingTable
         return null;
     }
 
+    /**
+     * Modifie la passerelle par défaut
+     * @param gate l'IP de la passerelle
+     */
     public void setDefaultGateway(IP gate)
     {
         this.gateways.set(0, gate);

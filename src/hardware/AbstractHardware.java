@@ -181,7 +181,7 @@ public abstract class AbstractHardware
     }
 
     /**
-     * Ces méthodes envoient et reçoivent des paquets, c'est la couche physique, pas de modification du paquet !
+     * Ces méthodes envoient et reçoivent des paquets, c'est la couche physique
      */
     public abstract void receive(Packet packet, int port);
     public abstract void send(Packet packet, int port) throws BadCallException;

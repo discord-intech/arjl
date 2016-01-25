@@ -1,7 +1,5 @@
 package packet;
 
-import java.util.ArrayList;
-
 /**
  * Classe servant de template pour les adresses IPv4
  */
@@ -9,6 +7,7 @@ import java.util.ArrayList;
 public class IP
 {
 
+    /** Les différents octets */
     public int o1;
     public int o2;
     public int o3;
@@ -55,21 +54,6 @@ public class IP
         return false;
     }
 
-    public static ArrayList<IP> getSubnetIPs(IP subnet, IP mask)
-    {
-        ArrayList<IP> res = new ArrayList<>();
-
-        for(int i=0 ; i<(256-(subnet.o1 | mask.o1)) ; i++)
-            for(int j=0 ; i<(256-(subnet.o2 | mask.o2)) ; i++)
-                for(int k=0 ; i<(256-(subnet.o3 | mask.o3)) ; i++)
-                    for(int l=0 ; i<(256-(subnet.o4 | mask.o4)) ; i++)
-                        res.add((new IP(subnet.o1+i,subnet.o2+j,subnet.o3+k,subnet.o4+l)));
-
-        return res;
-
-
-    }
-
     @Override
     public boolean equals(Object o)
     {
@@ -83,7 +67,10 @@ public class IP
         return o1+"."+o2+"."+o3+"."+o4;
     }
 
-
+    /**
+     * Vérifie s'il s'agit d'une IP de broadcast
+     * @param mask masque du sous-réseau
+     */
     public boolean isBroadcast(IP mask)
     {
         if(((o1 | mask.o1)&(o2 | mask.o2)&(o3 | mask.o3)&(o4 | mask.o4)) == 255)
