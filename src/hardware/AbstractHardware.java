@@ -187,7 +187,7 @@ public abstract class AbstractHardware
     public abstract void send(Packet packet, int port) throws BadCallException;
 
     /**
-     * Cette méthode lance le traitement du tampon (tout le tampon pour l'instant)
+     * Cette méthode lance le traitement du tampon, couches liaison de données et réseau
      */
     public abstract void treat() throws BadCallException;
 }
