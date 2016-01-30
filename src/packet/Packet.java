@@ -7,18 +7,27 @@ import java.util.Random;
 
 public class Packet
 {
+    /** IP et MAC du destinataire */
     public IP dst_addr;
     public int dst_mac;
 
+    /** IP et MAC de l'envoyeur */
     public IP src_addr;
     public int src_mac;
+
+    /** Variable TTL du paquet */
     private int TTL=128;
 
+    /** Utilisé pour création d'identifiants */
     public static final Random RNG = new Random();
 
+    /** Prochain routeur */
     private IP NHR;
+
+    /** S'il faut afficher dans la console son chemin pris (un tracert en somme)*/
     public boolean tracked = false;
 
+    /** Contenu du paquet */
     private Object data; // Permet de stocker une objet dans le paquet
 
     /**
@@ -27,9 +36,21 @@ public class Packet
      */
     public int lastPort;
 
+    /** Type de paquet */
     private PacketTypes type;
+
+    /** Si c'est une réponse (pas utilisé par tous les protocoles) */
     public boolean isResponse;
 
+    /**
+     *  Constructeur du paquet
+     * @param dst_addr adresse de destination
+     * @param src_addr adresse de l'envoyeur
+     * @param src_mac MAC de l'envoyeur
+     * @param dst_mac MAC du destinataire (-1 si inconnue)
+     * @param type type de paquet
+     * @param isResponse si c'est une réponse
+     */
     public Packet(IP dst_addr, IP src_addr, int src_mac, int dst_mac, PacketTypes type, boolean isResponse)
     {
         this.dst_addr=dst_addr;
@@ -44,6 +65,10 @@ public class Packet
             this.data = new DHCPData(Packet.RNG.nextInt(65533), src_mac);
     }
 
+    /**
+     * Constructeur de paquet en copiant un autre
+     * @param p paquet à copier
+     */
     public Packet(Packet p)
     {
         this.dst_addr=p.dst_addr;
@@ -59,6 +84,16 @@ public class Packet
 
     }
 
+    /**
+     *  Constructeur du paquet
+     * @param dst_addr adresse de destination
+     * @param src_addr adresse de l'envoyeur
+     * @param src_mac MAC de l'envoyeur
+     * @param dst_mac MAC du destinataire (-1 si inconnue)
+     * @param type type de paquet
+     * @param isResponse si c'est une réponse
+     * @param tracked si le paquet est suivi
+     */
     public Packet(IP dst_addr, IP src_addr, int src_mac, int dst_mac, PacketTypes type, boolean isResponse, boolean tracked)
     {
         this.dst_addr=dst_addr;
@@ -74,6 +109,11 @@ public class Packet
             this.data = new DHCPData(Packet.RNG.nextInt(65533), src_mac);
     }
 
+    /**
+     * Constructeur de paquet en copiant un autre
+     * @param p paquet à copier
+     * @param tracked si le paquet est suivi
+     */
     public Packet(Packet p, boolean tracked)
     {
         this.dst_addr=p.dst_addr;
@@ -87,6 +127,24 @@ public class Packet
         this.data=p.getData();
         this.TTL = p.getTTL();
     }
+
+    /**
+     * Réduit le TTL de 1
+     * @return true s'il a atteint 0, false sinon
+     */
+    public boolean TTLdown()
+    {
+        TTL--;
+        if(TTL == 0)
+            return true;
+        return false;
+    }
+
+    /**
+     * ========================
+     *   GETTERS ET SETTERS
+     * ========================
+     */
 
     public PacketTypes getType() {
         return type;
@@ -105,15 +163,6 @@ public class Packet
     {
         return TTL;
     }
-
-    public boolean TTLdown()
-    {
-        TTL--;
-        if(TTL == 0)
-            return true;
-        return false;
-    }
-
 
     public Object getData()
     {

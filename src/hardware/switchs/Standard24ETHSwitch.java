@@ -6,6 +6,9 @@ import exceptions.BadCallException;
 
 import java.util.ArrayList;
 
+/**
+ * Switch classique à 24 ports 1Gbit
+ */
 public class Standard24ETHSwitch extends AbstractSwitch
 {
 

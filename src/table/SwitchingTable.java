@@ -7,9 +7,14 @@ import java.util.ArrayList;
  */
 public class SwitchingTable
 {
+    /** Les MACs */
     private ArrayList<Integer> macs = new ArrayList<>();
+    /** Les ports associés */
     private ArrayList<Integer> ports = new ArrayList<>();
 
+    /**
+     * Ajoute une règle
+     */
     public synchronized void addRule(int mac, int port)
     {
         if(macs.contains(mac))

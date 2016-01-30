@@ -17,33 +17,49 @@ import java.util.ArrayList;
 
 /**
  * Classe abstraite définissant les routeurs (serveurs et clients en héritant)
- * TODO DOC
  */
 public abstract class AbstractRouter extends AbstractHardware
 {
 
+    /** La table de routage */
     protected RoutingTable routingTable;
+    /** La table ARP */
     protected ARPTable arp = new ARPTable();
-
+    /** Les paquets en attente de fin du protocole ARP */
     protected ArrayList<Packet> waitingForARP = new ArrayList<Packet>();
-
+    /** Les MACs des interfaces */
     protected ArrayList<Integer> MACinterfaces;
+    /** Les IPs des interfaces */
     protected ArrayList<IP> IPinterfaces;
-
-    protected int DHCPidentifier;
+    /** Si ce routeur est un relai DHCP */
     protected boolean isDHCPRelay = false;
+    /** L'addresse du serveur DHCP vers lequel relayer */
     protected IP DHCPaddress;
 
-    protected PacketTypes type=PacketTypes.NULL;
-    protected IP IP;
+    /**
+     * ======================================
+     *    ATTRIBUTS POUR CLIENTS ET SERVEURS
+     * ======================================
+     */
 
+    /** Identifiant DHCP */
+    protected int DHCPidentifier;
+    /** Le type de aquet géré (servers only) */
+    protected PacketTypes type=PacketTypes.NULL;
+    /** L'IP de la machine, c'est IPinterface.get(0) */
+    protected IP IP;
+    /** Si la machine attends une IP par DHCP  */
     protected boolean awaitingForIP = false;
 
     /**
-     * Constructeur à appeller avec super()
-     *
-     * @param port_types     liste des types de liens connectables
-     * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * Constructeur classique
+     * @param port_types les types de port
+     * @param port_bandwidth les banddes passantes
+     * @param overflow la capacté de traitement
+     * @param MACinterfaces les MACs des interfaces
+     * @param IPinterfaces Les IPs des interfaces
+     * @param default_gateway la passerelle par défaut
+     * @param default_port le port de la passerelle par défaut
      */
     public AbstractRouter(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth,
                           int overflow, ArrayList<Integer> MACinterfaces,
@@ -55,10 +71,12 @@ public abstract class AbstractRouter extends AbstractHardware
     }
 
     /**
-     * Constructeur à appeller avec super()
-     *
-     * @param port_types     liste des types de liens connectables
-     * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * Constructeur pour clients et serveurs avec configuration DHCP
+     * @param port_types les types de port
+     * @param port_bandwidth les banddes passantes
+     * @param overflow la capacté de traitement
+     * @param MACinterfaces les MACs des interfaces
+     * @param IPinterfaces Les IPs des interfaces
      */
     public AbstractRouter(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth,
                           int overflow, ArrayList<Integer> MACinterfaces,
@@ -96,15 +114,18 @@ public abstract class AbstractRouter extends AbstractHardware
         for(Integer i : packetsSent) //On initialise la liste à 0
             i = 0;
 
-        ArrayList<Object> route;
-        int mac;
-        for(Packet p : stack)
+        ArrayList<Object> route; //Sert à stocker la route trouvée par le routage
+        int mac; //MAC du NHR ou de la cible
+        for(Packet p : stack) //On parcours le tampon
         {
 
-            if(p.getType() == PacketTypes.DHCP)
+            if(p.getType() == PacketTypes.DHCP) // Si on a un paquet DHCP
             {
+                //===================================
+                // Fonctions pour client (demandeur)
+                //===================================
                 if(this.IPinterfaces.isEmpty() && p.isResponse && ((DHCPData)p.getData()).identifier == this.DHCPidentifier
-                        && !((DHCPData)p.getData()).isOK())
+                        && !((DHCPData)p.getData()).isOK()) //Traitement de la proposition de plage IP
                 {
                     ArrayList<IP> range = ((DHCPData) p.getData()).getRange();
                     ((DHCPData) p.getData()).setChosen(range.get(0));
@@ -116,7 +137,7 @@ public abstract class AbstractRouter extends AbstractHardware
                     continue;
                 }
                 else if(this.IPinterfaces.isEmpty() && p.isResponse && ((DHCPData)p.getData()).identifier == this.DHCPidentifier
-                        && ((DHCPData)p.getData()).isOK())
+                        && ((DHCPData)p.getData()).isOK()) //Traitement de la validation du choix (DHCPOK)
                 {
                     this.IPinterfaces.add(((DHCPData) p.getData()).getChosen());
                     this.IP = ((DHCPData) p.getData()).getChosen();
@@ -130,9 +151,12 @@ public abstract class AbstractRouter extends AbstractHardware
                     awaitingForIP=false;
                     continue;
                 }
-                else if(this.isDHCPRelay && this.type != PacketTypes.DHCP)
+                //===================================
+                // Fonctions pour relai DHCP
+                //===================================
+                else if(this.isDHCPRelay && this.type != PacketTypes.DHCP) // On vérifie qu'on est pas un serveur DHCP
                 {
-                    if(((DHCPData)p.getData()).getSubnetInfo().get(1) == null)
+                    if(((DHCPData)p.getData()).getSubnetInfo().get(1) == null)  // Si le paquet est nu, je me met en premier relai
                     {
                         ((DHCPData)p.getData()).setSubnetInfo(this.IPinterfaces.get(p.lastPort),
                                 routingTable.getRelatedMask((IP)routingTable.routeMe(this.IPinterfaces.get(p.lastPort)).get(1)));
@@ -143,7 +167,7 @@ public abstract class AbstractRouter extends AbstractHardware
                         p.dst_mac = this.MACinterfaces.get(p.lastPort);
                         //Et on continue vers le routage...
                     }
-                    else if(IPinterfaces.contains(p.dst_addr))
+                    else if(IPinterfaces.contains(p.dst_addr)) // Si je suis le premier relai, je broadcast pour atteindre le client
                     {
                         p.dst_mac = ((DHCPData) p.getData()).getAskerMAC();
                         p.src_mac = MACinterfaces.get(IPinterfaces.indexOf(p.dst_addr));
@@ -159,9 +183,9 @@ public abstract class AbstractRouter extends AbstractHardware
             if(awaitingForIP) //Si je ne suis pas configuré en IP (attente DHCP), je quitte
                 return;
 
-            if(p.getType() == PacketTypes.ARP)
+            if(p.getType() == PacketTypes.ARP) //S'il s'agit d'un paquet lié à l'ARP
             {
-                if(p.isResponse)
+                if(p.isResponse) //Si c'est une réponse ("IP is at MAC")
                 {
                     for(int i=0 ; i<waitingForARP.size() ; i++)
                     {
@@ -174,7 +198,7 @@ public abstract class AbstractRouter extends AbstractHardware
                         }
                     }
                 }
-                else
+                else // Si c'est une demande ("who is IP?")
                 {
                     for(IP i : IPinterfaces)
                     {
@@ -202,7 +226,7 @@ public abstract class AbstractRouter extends AbstractHardware
             }
 
             route = routingTable.routeMe(p.dst_addr); //route={port de redirection ; IP du NHR}
-            IP ip;
+            IP ip; // IP du NHR
             if(IPinterfaces.contains(route.get(1))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
             {
                 mac = arp.findARP(p.dst_addr);
@@ -215,7 +239,7 @@ public abstract class AbstractRouter extends AbstractHardware
             }
 
             p.setNHR(ip);
-            if(mac == -1)
+            if(mac == -1) //Si la MAC de la cible/NHR n'est pas connue, on lance le protocole ARP
             {
                 waitingForARP.add(p);
                 if(IPinterfaces.contains(route.get(1))) //Si le gateway vaut 0.0.0.0 c'est qu'on est arrivé
@@ -237,21 +261,35 @@ public abstract class AbstractRouter extends AbstractHardware
             futureStack.addAll(0, newStack);
     }
 
+    /**
+     * Traitement du paquet à haut-niveau (couche application)
+     * @param p le paquet
+     */
     protected void treatData(Packet p) throws BadCallException {
 
     }
 
+    /**
+     * Ajoute une règle de routage
+     */
     public void addRoutingRule(int port_number, IP subnet, IP mask, IP gateway, int metric)
     {
         routingTable.addRule(port_number, subnet, mask, gateway, metric);
     }
 
+    /**
+     * Configure le routeur comme relai DHCP
+     * @param DHCPaddress l'adresse du serveur DHCP
+     */
     public void setDHCPRelay(IP DHCPaddress)
     {
         this.isDHCPRelay = true;
         this.DHCPaddress = DHCPaddress;
     }
 
+    /**
+     * Lance le propocole DHCP pour trouver une IP (clients et servers only)
+     */
     public void DHCPClient() throws BadCallException {
         this.awaitingForIP=true;
         Packet p =new Packet(new IP(255,255,255,255), new IP(0,0,0,0), this.MACinterfaces.get(0), -1, PacketTypes.DHCP, false, true);

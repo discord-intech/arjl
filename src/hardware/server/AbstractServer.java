@@ -29,13 +29,11 @@ public abstract class AbstractServer extends AbstractRouter
      * @param port_bandwidth la bande passante
      * @param overflow la capacité de traitement
      * @param MAC la MAC de l'appareil
-     * @param default_gateway la passerelle par défaut
      * @param type le type de paquets, donc le type de service rendu
      */
     public AbstractServer(LinkTypes port_type, Bandwidth port_bandwidth,
-                          int overflow, int MAC, IP default_gateway, int default_port, PacketTypes type) throws BadCallException {
-        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(),
-                default_gateway, 0);
+                          int overflow, int MAC, PacketTypes type) throws BadCallException {
+        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>());
         this.type=type;
         this.MAC = MAC;
     }
@@ -52,9 +50,9 @@ public abstract class AbstractServer extends AbstractRouter
      */
     public AbstractServer(LinkTypes port_type, Bandwidth port_bandwidth,
                           int overflow, int MAC,
-                          IP IP, IP default_gateway, int default_port, PacketTypes type) throws BadCallException {
+                          IP IP, IP default_gateway, PacketTypes type) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(){{add(IP);}},
-                default_gateway, default_port);
+                default_gateway, 0);
         this.IP = IP;
         this.MAC = MAC;
         this.type=type;
