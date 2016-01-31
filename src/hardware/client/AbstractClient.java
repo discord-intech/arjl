@@ -8,6 +8,7 @@ import hardware.router.AbstractRouter;
 import hardware.Link;
 import packet.IP;
 import packet.Packet;
+import table.WaitingTable;
 
 import java.util.ArrayList;
 
@@ -22,13 +23,10 @@ public abstract class AbstractClient extends AbstractRouter
     protected int MAC;
 
     /**
-     * Liste des différentes requètes qui attendent une réponse complètes
+     * Table d'attente de réponses
      */
-    protected ArrayList<IP> waitingFrom = new ArrayList<>();
-    /**
-     * Lié à waitingFrom, nombres de paquets attendus restants
-     */
-    protected ArrayList<Integer> numberOfPackets = new ArrayList<>();
+    protected WaitingTable waitingRequests = new WaitingTable();
+
 
     /**
      * Constructeur à appeller
@@ -82,17 +80,9 @@ public abstract class AbstractClient extends AbstractRouter
 
     @Override
     protected void treatData(Packet p) throws BadCallException {
-        if (p.isResponse && p.getType() == PacketTypes.WEB && waitingFrom.contains(p.src_addr)) //DEBUG !!!
+        if (p.isResponse)
         {
-            System.out.println(this.IP + " : reçu WEB de " + p.src_addr);
-            if(numberOfPackets.get(waitingFrom.indexOf(p.src_addr)) == 1)
-            {
-                numberOfPackets.remove(waitingFrom.indexOf(p.src_addr));
-                waitingFrom.remove(p.src_addr);
-            }
-            else
-                numberOfPackets.set(waitingFrom.indexOf(p.src_addr),
-                        numberOfPackets.get(waitingFrom.indexOf(p.src_addr))-1);
+            waitingRequests.doIWaitForIt(p.getType(), p.src_addr);
         }
     }
 
@@ -110,8 +100,7 @@ public abstract class AbstractClient extends AbstractRouter
         if(type == PacketTypes.WEB)
         {
             futureStack.add(new Packet(destination, this.IP, this.MAC, -1, PacketTypes.WEB, false, false));
-            waitingFrom.add(destination);
-            numberOfPackets.add(PacketTypes.WEB.size);
+            waitingRequests.addWaiting(PacketTypes.WEB, destination);
             //System.out.println(this.IP+" : Envoi requête WEB vers "+destination);
         }
     }
@@ -121,7 +110,16 @@ public abstract class AbstractClient extends AbstractRouter
      */
     public boolean waitsForSomething()
     {
-        return !waitingFrom.isEmpty();
+        return waitingRequests.AmIWaitingForSomething();
+    }
+
+    /**
+     * Vérifie les timeout et les décrémente, supprime une requête si elle a timeout
+     * @return true si on a eu un timeout, false sinon
+     */
+    public boolean timeoutCheck()
+    {
+        return this.waitingRequests.isThereATimeout();
     }
 
 }

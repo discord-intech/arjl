@@ -5,6 +5,7 @@ import enums.LinkTypes;
 import exceptions.BadCallException;
 import exceptions.NoFreePortsException;
 import hardware.AbstractHardware;
+import hardware.client.AbstractClient;
 import hardware.router.AbstractRouter;
 import hardware.Link;
 
@@ -76,5 +77,25 @@ public class Actions
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * Opère le traitement des appareils
+     * @param hardwares liste des appareils à traiter
+     */
+    public static synchronized void treatEverything(ArrayList<AbstractHardware> hardwares) throws BadCallException
+    {
+        for(AbstractHardware hard : hardwares)
+        {
+            hard.treat();
+
+            if(hard instanceof AbstractClient)
+                ((AbstractClient)hard).timeoutCheck();
+        }
+
+        for(AbstractHardware hard : hardwares)
+        {
+            hard.validateStack();
+        }
     }
 }
