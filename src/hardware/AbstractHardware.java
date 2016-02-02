@@ -8,6 +8,7 @@ import exceptions.NoFreePortsException;
 import packet.Packet;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Classe abstraite définissant les appareils connectés
@@ -32,10 +33,16 @@ public abstract class AbstractHardware
     /** Représente le maximum supportable par l'appareil en terme de paquets dans son tampon (stack) */
     protected final int overflowValue;
 
+    /** Utilisé pour simulation de collisions */
+    public static final Random RNG = new Random();
+
+    /** Valeur de probabilité de collision (en mille-pour-cent) */
+    protected static final int collisionRate = 5;
+
     /**
      * Constructeur à appeller avec super()
      * @param port_types liste des types de liens connectables
-     * @param port_bandwidth liste des bandes passantes (couplée avec port_types !)
+     * @param port_bandwidth listes des bandes passantes (couplée avec port_types !)
      * @param overflow maximum de paquets supportables dans son tampon de traitement
      */
     public AbstractHardware(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth, int overflow) throws BadCallException {

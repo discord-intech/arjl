@@ -68,6 +68,8 @@ public abstract class AbstractServer extends AbstractRouter
     @Override
     public void send(Packet packet, int port) throws BadCallException
     {
+        if(RNG.nextInt(1001) < collisionRate) //Si on perd le paquet dans une collision
+            return;
         if(packet.TTLdown())
             return;
         Link link = ports.get(port);
