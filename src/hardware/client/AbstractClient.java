@@ -5,7 +5,6 @@ import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
 import hardware.router.AbstractRouter;
-import hardware.Link;
 import packet.IP;
 import packet.Packet;
 import table.WaitingTable;
@@ -25,7 +24,7 @@ public abstract class AbstractClient extends AbstractRouter
     /**
      * Table d'attente de réponses
      */
-    protected WaitingTable waitingRequests = new WaitingTable();
+    protected final WaitingTable waitingRequests = new WaitingTable();
 
 
     /**
@@ -56,7 +55,7 @@ public abstract class AbstractClient extends AbstractRouter
      */
     public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}},
-                new ArrayList<IP>());
+                new ArrayList<>());
         this.MAC = MAC;
     }
 
@@ -65,19 +64,6 @@ public abstract class AbstractClient extends AbstractRouter
     {
         packet.lastPort = port;
         this.futureStack.add(packet);
-    }
-
-    @Override
-    public void send(Packet packet, int port) throws BadCallException
-    {
-        if(RNG.nextInt(1001) < collisionRate) //Si on perd le paquet dans une collision
-            return;
-        if(packet.TTLdown())
-            return;
-        Link link = ports.get(port);
-        link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
-        if(packet.tracked)
-            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
     }
 
     @Override

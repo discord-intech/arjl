@@ -11,10 +11,10 @@ import java.util.ArrayList;
 public class ARPTable
 {
 	/** Les IPs */
-    ArrayList<IP> ips = new ArrayList<>();
+    private ArrayList<IP> ips = new ArrayList<>();
     
     /** Les MACs corrélées aux IPs */
-    ArrayList<Integer> macs = new ArrayList<>();
+    private ArrayList<Integer> macs = new ArrayList<>();
 
     /**
      * Ajoute une règle ARP

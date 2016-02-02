@@ -13,18 +13,18 @@ import java.util.ArrayList;
 public class WaitingTable
 {
     /** Représente le type de requète envoyé */
-    private ArrayList<PacketTypes> types = new ArrayList<>();
+    private final ArrayList<PacketTypes> types = new ArrayList<>();
 
     /** L'adresse IP du serveur dont on attends la réponse*/
-    private ArrayList<IP> servers = new ArrayList<>();
+    private final ArrayList<IP> servers = new ArrayList<>();
 
     /** Le temps écoulé */
-    private ArrayList<Integer> timing = new ArrayList<>();
+    private final ArrayList<Integer> timing = new ArrayList<>();
 
     /**
      * Nombres de paquets attendus restants
      */
-    protected ArrayList<Integer> numberOfPackets = new ArrayList<>();
+    private final ArrayList<Integer> numberOfPackets = new ArrayList<>();
 
     /**
      * Supprime les attentes ayant timeout

@@ -23,7 +23,7 @@ public class DHCPData
     /** le masque du sous-réseau du demandeur */
     private IP subnetMask = null;
     /** l'identifiant de la demande */
-    public int identifier;
+    public final int identifier;
     /** IP du premier relai DHCP rencontré, utile pour connaître le sous-réseau cible et pour broadcast à ce PC sans IP */
     private IP firstRelay;
     /** IP choisie par le demandeur */

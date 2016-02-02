@@ -37,10 +37,16 @@ public class Packet
     public int lastPort;
 
     /** Type de paquet */
-    private PacketTypes type;
+    private final PacketTypes type;
 
     /** Si c'est une réponse (pas utilisé par tous les protocoles) */
     public boolean isResponse;
+
+    /** Utilisé par les appareils pour reconaître un paquet déjà traité mais en attente de libération de la bande passante*/
+    public boolean alreadyTreated=false;
+
+    /** Utilisé pour la gestion de la bande passante*/
+    public int destinationPort;
 
     /**
      *  Constructeur du paquet
@@ -135,9 +141,7 @@ public class Packet
     public boolean TTLdown()
     {
         TTL--;
-        if(TTL == 0)
-            return true;
-        return false;
+        return TTL == 0;
     }
 
     /**

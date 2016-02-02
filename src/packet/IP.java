@@ -8,10 +8,10 @@ public class IP
 {
 
     /** Les différents octets */
-    public int o1;
-    public int o2;
-    public int o3;
-    public int o4;
+    public final int o1;
+    public final int o2;
+    public final int o3;
+    public final int o4;
 
 
     public IP(int o1, int o2, int o3, int o4)
@@ -45,20 +45,39 @@ public class IP
     {
         if(other.o1 > this.o1)
             return true;
-        if(other.o2 > this.o2)
-            return true;
-        if(other.o3 > this.o3)
-            return true;
-        if(other.o4 > this.o4)
-            return true;
+        else if (other.o1 < this.o2)
+            return false;
+        else //égalité
+        {
+            if(other.o2 > this.o2)
+                return true;
+            else if (other.o2 < this.o2)
+                return false;
+            else //égalité
+            {
+                if(other.o3 > this.o3)
+                    return true;
+                else if (other.o3 < this.o3)
+                    return false;
+                else //égalité
+                {
+                    if(other.o4 > this.o4)
+                        return true;
+                }
+            }
+        }
         return false;
     }
 
     @Override
     public boolean equals(Object o)
     {
-        IP other = (IP)o;
-        return ( (this.o1 == other.o1) && (this.o2 == other.o2) && (this.o3 == other.o3) && (this.o4 == other.o4) );
+        if(o instanceof IP)
+        {
+            IP other = (IP) o;
+            return ((this.o1 == other.o1) && (this.o2 == other.o2) && (this.o3 == other.o3) && (this.o4 == other.o4));
+        }
+        return false;
     }
 
     @Override
@@ -73,8 +92,6 @@ public class IP
      */
     public boolean isBroadcast(IP mask)
     {
-        if(((o1 | mask.o1)&(o2 | mask.o2)&(o3 | mask.o3)&(o4 | mask.o4)) == 255)
-            return true;
-        return false;
+        return ((o1 | mask.o1) & (o2 | mask.o2) & (o3 | mask.o3) & (o4 | mask.o4)) == 255;
     }
 }

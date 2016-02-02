@@ -12,15 +12,15 @@ public class RoutingTable
 {
 
     /** les sous-réseaux */
-    private ArrayList<IP> subnets = new ArrayList<>();
+    private final ArrayList<IP> subnets = new ArrayList<>();
     /** les masques de sous-réseau */
-    private ArrayList<IP> masks = new ArrayList<>();
+    private final ArrayList<IP> masks = new ArrayList<>();
     /** les passerelles (ou NHR) */
-    private ArrayList<IP> gateways = new ArrayList<>();
+    private final ArrayList<IP> gateways = new ArrayList<>();
     /** les numéros de port associés */
-    private ArrayList<Integer> port_numbers = new ArrayList<>();
+    private final ArrayList<Integer> port_numbers = new ArrayList<>();
     /** Métrique de la route */
-    private ArrayList<Integer> metric = new ArrayList<>();
+    private final ArrayList<Integer> metric = new ArrayList<>();
 
     /**
      * Constructeur de la table
@@ -88,16 +88,16 @@ public class RoutingTable
                 j=i;
         }
 
-        ArrayList<Integer> more_pot_res = new ArrayList<>();
+        ArrayList<Integer> more_pot_res = new ArrayList<>(); // Autre liste pour stocker des résultats potentiels
 
         //On vérifie que l'on a pas plusieurs résultat avec la même métrique
         for(int i=0 ; i < metric.size() ; i++)
         {
-            if(pot_res.contains(i) && (metric.get(i) == metric.get(j)) && (i != j))
+            if(pot_res.contains(i) && (metric.get(i).equals(metric.get(j))) && (i != j))
                 more_pot_res.add(i);
         }
 
-        //Si c'est le cas, on prends celle avec le plus petit masque
+        //Si c'est le cas, on prends celle avec le plus grand masque
         if(!more_pot_res.isEmpty())
         {
             for(int index : more_pot_res)
@@ -122,10 +122,8 @@ public class RoutingTable
         if(res.get(1).equals(new IP(0,0,0,0)))
             return false;
 
-        IP mask = masks.get(gateways.indexOf((IP)res.get(1)));
-        if(p.dst_addr.isBroadcast(mask))
-            return true;
-        return false;
+        IP mask = masks.get(gateways.indexOf(res.get(1)));
+        return p.dst_addr.isBroadcast(mask);
 
     }
 

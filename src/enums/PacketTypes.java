@@ -13,9 +13,9 @@ public enum PacketTypes
     RIP(2,15),
     FTP(50,100);
 
-    public int size;
-    public int time;
-    private PacketTypes(int val, int time)
+    public final int size;
+    public final int time;
+    PacketTypes(int val, int time)
     {
         this.size = val;
         this.time = time;

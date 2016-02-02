@@ -5,7 +5,6 @@ import enums.Bandwidth;
 import enums.LinkTypes;
 import exceptions.BadCallException;
 import hardware.AbstractHardware;
-import hardware.Link;
 import packet.Packet;
 import table.SwitchingTable;
 
@@ -58,39 +57,21 @@ public abstract class AbstractSwitch extends AbstractHardware
     }
 
     @Override
-    public void send(Packet packet, int port) throws BadCallException
-    {
-        if(RNG.nextInt(1001) < collisionRate) //Si on perd le paquet dans une collision
-            return;
-        if(packet.TTLdown())
-            return;
-        Link link = ports.get(port);
-        link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
-        if(packet.tracked)
-            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
-    }
-
-    @Override
     public void treat() throws BadCallException
     {
-        ArrayList<Packet> newStack = new ArrayList<>(); //Permet de garder les paquets non envoyables
-        int[] packetsSent = new int[ports.size()]; //Permet de compter les paquets pour simuler la bande passante
-        for(Integer i : packetsSent) //On initialise la liste à 0
-            i = 0;
 
         int port;
-
         for(Packet p : stack)
         {
+            if(p.alreadyTreated) //Si c'était un paquet en attente de libération de la bande passante
+            {
+                p.alreadyTreated=false;
+                this.send(p, p.destinationPort);
+                continue;
+            }
             if((port = switchingTable.commute(p.dst_mac)) != -1) // S'il connait la destination
             {
-                if(packetsSent[port] < ports.get(port).getBandwidth().value)
-                {
-                    this.send(new Packet(p), port);
-                    packetsSent[port]++;
-                }
-                else
-                    newStack.add(p);
+                this.send(new Packet(p), port);
             }
             else //S'il ne la connaît pas
             {
@@ -98,19 +79,12 @@ public abstract class AbstractSwitch extends AbstractHardware
                 {
                     if (i != p.lastPort)
                     {
-                        if (ports.get(i) != null && packetsSent[i] < ports.get(i).getBandwidth().value)
-                        {
+                        if (ports.get(i) != null)
                             this.send(new Packet(p), i);
-                            packetsSent[i]++;
-                        }
-                        else if(ports.get(i) != null)
-                            newStack.add(p);
                     }
                 }
             }
         }
-        if(!newStack.isEmpty())
-            futureStack.addAll(0, newStack);
     }
 
 }

@@ -6,7 +6,6 @@ import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
 import hardware.AbstractHardware;
-import hardware.Link;
 import packet.IP;
 import packet.Packet;
 import packet.data.DHCPData;
@@ -24,9 +23,9 @@ public abstract class AbstractRouter extends AbstractHardware
     /** La table de routage */
     protected RoutingTable routingTable;
     /** La table ARP */
-    protected ARPTable arp = new ARPTable();
+    protected final ARPTable arp = new ARPTable();
     /** Les paquets en attente de fin du protocole ARP */
-    protected ArrayList<Packet> waitingForARP = new ArrayList<Packet>();
+    protected ArrayList<Packet> waitingForARP = new ArrayList<>();
     /** Les MACs des interfaces */
     protected ArrayList<Integer> MACinterfaces;
     /** Les IPs des interfaces */
@@ -97,30 +96,18 @@ public abstract class AbstractRouter extends AbstractHardware
     }
 
     @Override
-    public void send(Packet packet, int port) throws BadCallException
-    {
-        if(RNG.nextInt(1001) < collisionRate) //Si on perd le paquet dans une collision
-            return;
-        if(packet.TTLdown())
-            return;
-        Link link = ports.get(port);
-        link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
-        if(packet.tracked)
-            System.out.println(this.IPinterfaces.get(port).toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
-    }
-
-    @Override
     public void treat() throws BadCallException {
-        ArrayList<Packet> newStack = new ArrayList<>(); //Permet de garder les paquets non envoyables
-        int[] packetsSent = new int[ports.size()]; //Permet de compter les paquets pour simuler la bande passante
-        for(Integer i : packetsSent) //On initialise la liste à 0
-            i = 0;
 
         ArrayList<Object> route; //Sert à stocker la route trouvée par le routage
         int mac; //MAC du NHR ou de la cible
         for(Packet p : stack) //On parcours le tampon
         {
-
+            if(p.alreadyTreated) //Si c'était un paquet en attente de libération de la bande passante
+            {
+                p.alreadyTreated=false;
+                this.send(p, p.destinationPort);
+                continue;
+            }
             if(p.getType() == PacketTypes.DHCP) // Si on a un paquet DHCP
             {
                 //===================================
@@ -259,8 +246,6 @@ public abstract class AbstractRouter extends AbstractHardware
             this.send(p, (int)route.get(0));
 
         }
-        if(!newStack.isEmpty())
-            futureStack.addAll(0, newStack);
     }
 
     /**

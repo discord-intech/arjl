@@ -6,5 +6,5 @@ package enums;
 public enum LinkTypes
 {
     ETH,
-    SERIAL;
+    SERIAL
 }

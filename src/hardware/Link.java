@@ -14,13 +14,13 @@ public class Link
 {
 
     /** Le premier appareil */
-    private AbstractHardware hard1;
+    private final AbstractHardware hard1;
     /** Le second appareil */
-    private AbstractHardware hard2;
+    private final AbstractHardware hard2;
     /** La bande passante du lien */
     private Bandwidth bandwidth;
     /** Le type de lien (ETH, Serial,...) */
-    private LinkTypes type;
+    private final LinkTypes type;
 
     /** Permet de compter les liens instanciés */
     private static int linksCount=0;
@@ -46,7 +46,7 @@ public class Link
      */
     public ArrayList<AbstractHardware> getHardwareConnected()
     {
-        ArrayList<AbstractHardware> ret = new ArrayList<AbstractHardware>();
+        ArrayList<AbstractHardware> ret = new ArrayList<>();
         ret.add(hard1);
         ret.add(hard2);
         return ret;

@@ -11,8 +11,8 @@ public enum Bandwidth
     ETH_1G(30);    // Gigabit Ethernet 1Gbps
 
 
-    public int value;
-    private Bandwidth(int val)
+    public final int value;
+    Bandwidth(int val)
     {
         this.value = val;
     }

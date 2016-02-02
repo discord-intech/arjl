@@ -8,9 +8,9 @@ import java.util.ArrayList;
 public class SwitchingTable
 {
     /** Les MACs */
-    private ArrayList<Integer> macs = new ArrayList<>();
+    private final ArrayList<Integer> macs = new ArrayList<>();
     /** Les ports associés */
-    private ArrayList<Integer> ports = new ArrayList<>();
+    private final ArrayList<Integer> ports = new ArrayList<>();
 
     /**
      * Ajoute une règle

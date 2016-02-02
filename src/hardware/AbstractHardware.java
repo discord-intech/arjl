@@ -16,7 +16,7 @@ import java.util.Random;
 public abstract class AbstractHardware
 {
     /** Liste des liens connectés */
-    protected ArrayList<Link> ports = new ArrayList<>();
+    protected final ArrayList<Link> ports = new ArrayList<>();
 
     /** Liste des types de ports disponibles sur l'appareil */
     protected final ArrayList<LinkTypes> port_types;
@@ -25,10 +25,10 @@ public abstract class AbstractHardware
     protected final ArrayList<Bandwidth> port_bandwidth;
 
     /** Liste de paquets représentant le tampon de l'appareil */
-    protected ArrayList<Packet> stack = new ArrayList<Packet>();
+    protected ArrayList<Packet> stack = new ArrayList<>();
 
     /** Liste temporaire de paquets pour éviter qu'ils soient traités trop vite */
-    protected ArrayList<Packet> futureStack = new ArrayList<Packet>();
+    protected ArrayList<Packet> futureStack = new ArrayList<>();
 
     /** Représente le maximum supportable par l'appareil en terme de paquets dans son tampon (stack) */
     protected final int overflowValue;
@@ -38,6 +38,10 @@ public abstract class AbstractHardware
 
     /** Valeur de probabilité de collision (en mille-pour-cent) */
     protected static final int collisionRate = 2;
+
+    /** Permet de compter les paquets pour simuler la bande passante */
+    protected int[] packetsSent;
+
 
     /**
      * Constructeur à appeller avec super()
@@ -51,6 +55,7 @@ public abstract class AbstractHardware
         this.port_types = port_types;
         this.port_bandwidth = port_bandwidth;
         this.overflowValue = overflow;
+        this.packetsSent = new int[port_bandwidth.size()];
         for(int i=0;i<port_bandwidth.size();i++)
             ports.add(null);
     }
@@ -68,7 +73,7 @@ public abstract class AbstractHardware
      */
     public ArrayList<LinkTypes> getFreePorts()
     {
-        ArrayList<LinkTypes> free = new  ArrayList<LinkTypes>();
+        ArrayList<LinkTypes> free = new ArrayList<>();
         // On vérifie les ports libres, s'ils le sont, on envoie leur type
         for(int i=0 ; i < ports.size() ; i++)
         {
@@ -185,13 +190,34 @@ public abstract class AbstractHardware
                 stack.remove(stack.size()-1);
             }
         }
+
+        for(int i=0 ; i<packetsSent.length ; i++) //Reset du comptage pour la bande passante
+            packetsSent[i]=0;
     }
 
     /**
      * Ces méthodes envoient et reçoivent des paquets, c'est la couche physique
      */
     public abstract void receive(Packet packet, int port);
-    public abstract void send(Packet packet, int port) throws BadCallException;
+
+    public void send(Packet packet, int port) throws BadCallException
+    {
+        if(packetsSent[port] > port_bandwidth.get(port).value) //Gestion de la bande passante
+        {
+            packet.alreadyTreated = true;
+            packet.destinationPort=port;
+            futureStack.add(packet);
+            return;
+        }
+        if(RNG.nextInt(1001) < collisionRate) //Si on perd le paquet dans une collision
+            return;
+        if(packet.TTLdown())
+            return;
+        Link link = ports.get(port);
+        link.getOtherHardware(this).receive(packet, ports.get(port).getOtherHardware(this).whichPort(link));
+        if(packet.tracked)
+            System.out.println(this.toString()+" : sent "+packet.getType()+" to "+packet.dst_addr+" with NHR="+packet.getNHR()+" isResponse="+packet.isResponse);
+    }
 
     /**
      * Cette méthode lance le traitement du tampon, couches liaison de données et réseau

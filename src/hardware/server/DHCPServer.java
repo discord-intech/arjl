@@ -9,6 +9,7 @@ import packet.data.DHCPData;
 import table.DHCPTable;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Classe définisssant un serveur DHCP classique par ethernet (1G)
@@ -19,16 +20,16 @@ public class DHCPServer extends AbstractServer
     /**
      * Les IPs déjà adressées
      */
-    ArrayList<IP> takenIPs;
+    private ArrayList<IP> takenIPs;
     /**
      * La liste des transactions en cours, repérées par leur identifiant
      */
-    ArrayList<Integer> identifiers = new ArrayList<>();
+    private ArrayList<Integer> identifiers = new ArrayList<>();
 
     /**
      * La table d'adressage
      */
-    DHCPTable DHCPtable = new DHCPTable();
+    private final DHCPTable DHCPtable = new DHCPTable();
 
     /**
      * Constructeur
@@ -38,7 +39,7 @@ public class DHCPServer extends AbstractServer
      */
     public DHCPServer(int MAC, packet.IP IP, packet.IP default_gateway) throws BadCallException {
         super(LinkTypes.ETH, Bandwidth.ETH_1G, 30, MAC, IP, default_gateway, PacketTypes.DHCP);
-        takenIPs = new ArrayList<IP>();
+        takenIPs = new ArrayList<>();
         takenIPs.add(IP);
         setDHCPRelay(IP);
     }
@@ -67,8 +68,8 @@ public class DHCPServer extends AbstractServer
         {
             //System.out.println(this.IP + " : reçu DHCP de " + p.src_addr);
             ArrayList<IP> firstrelay = ((DHCPData)p.getData()).getSubnetInfo();
-            IP[] range = DHCPtable.gimmeARange(firstrelay.get(0).getSubnet(firstrelay.get(1)), firstrelay.get(1));
-            ArrayList<IP> avail = new ArrayList<packet.IP>();
+            IP[] range = DHCPtable.gimmeARange(firstrelay.get(0).getSubnet(firstrelay.get(1)));
+            ArrayList<IP> avail = new ArrayList<>();
             ArrayList<IP> subnetIPs = new ArrayList<>();
 
             for(int i=range[0].o1 ; i<=range[1].o1 ; i++)
@@ -77,11 +78,7 @@ public class DHCPServer extends AbstractServer
                         for(int l=range[0].o4 ; l<=range[1].o4 ; l++)
                             subnetIPs.add((new IP(i,j,k,l)));
 
-            for(IP i : subnetIPs)
-            {
-                if(!takenIPs.contains(i))
-                    avail.add(i);
-            }
+            avail.addAll(subnetIPs.stream().filter(i -> !takenIPs.contains(i)).collect(Collectors.toList()));
             ((DHCPData)p.getData()).setRange(avail);
             p.src_addr = this.IP;
             p.dst_addr = firstrelay.get(0);

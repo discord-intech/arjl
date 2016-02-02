@@ -77,9 +77,6 @@ public class JUnit_networking
             Actions.connect(DHCPtester, srA, LinkTypes.ETH);
             DHCPtester.DHCPClient();
 
-            int count = 0;
-            long time = System.currentTimeMillis();
-
             while(true)
             {
                 A.treat();
@@ -112,7 +109,6 @@ public class JUnit_networking
 
                 if(!jeanLuc_PC.waitsForSomething()) {
                     jeanLuc_PC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
-                    count++;
                 }
                 if(!raymondPC.waitsForSomething()) {
                     raymondPC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
@@ -121,19 +117,8 @@ public class JUnit_networking
                     DHCPtester.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
                 }
 
-              /*  if(count ==1001)
-                {
-                    System.out.println("1000 transactions in "+(System.currentTimeMillis()-time)+" ms.");
-                    count=0;
-                    time=System.currentTimeMillis();
-                }*/
-
-
-
             }
-        } catch (BadCallException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (BadCallException | InterruptedException e) {
             e.printStackTrace();
         }
     }

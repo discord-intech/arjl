@@ -93,9 +93,6 @@ public class Actions
                 ((AbstractClient)hard).timeoutCheck();
         }
 
-        for(AbstractHardware hard : hardwares)
-        {
-            hard.validateStack();
-        }
+        hardwares.forEach(AbstractHardware::validateStack);
     }
 }
