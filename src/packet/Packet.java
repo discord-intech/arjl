@@ -19,7 +19,7 @@ public class Packet
     private int TTL=128;
 
     /** Utilisé pour création d'identifiants */
-    public static final Random RNG = new Random();
+    public static final Random RNG = new Random(System.currentTimeMillis());
 
     /** Prochain routeur */
     private IP NHR;
@@ -106,7 +106,7 @@ public class Packet
         this.tracked=tracked;
 
         if(type == PacketTypes.DHCP)
-            this.data = new DHCPData(Packet.RNG.nextInt(65533), src_mac);
+            this.data = new DHCPData(Packet.RNG.nextInt(655335478), src_mac);
     }
 
     /**

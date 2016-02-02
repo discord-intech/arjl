@@ -34,7 +34,7 @@ public abstract class AbstractHardware
     protected final int overflowValue;
 
     /** Utilisé pour simulation de collisions */
-    public static final Random RNG = new Random();
+    public static final Random RNG = new Random(System.currentTimeMillis());
 
     /** Valeur de probabilité de collision (en mille-pour-cent) */
     protected static final int collisionRate = 5;
