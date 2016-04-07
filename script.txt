@@ -1,0 +1,37 @@
+add pc pc
+add standardrouter rout
+add standardswitch sra
+add standardswitch srb
+add webserver web
+link sra pc eth
+link srb web eth
+link sra rout eth
+link srb rout eth
+speed 0.1
+edit pc
+verbose on
+gateway 192.168.0.1
+config 0
+setip 192.168.0.2
+exit
+exit
+edit web
+verbose on
+gateway 192.168.1.1
+config 0
+setip 192.168.1.2
+exit
+exit
+edit rout
+verbose on
+config 0
+setip 192.168.0.1
+exit
+config 1
+setip 192.168.1.1
+exit
+addroute 192.168.1.0 255.255.255.0 192.168.1.1 1
+addroute 192.168.0.0 255.255.255.0 192.168.0.1 0
+exit
+startall
+edit pc

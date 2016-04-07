@@ -1,10 +1,15 @@
 package packet;
 
+import exceptions.BadCallException;
+
+import java.io.Serializable;
+
 /**
  * Classe servant de template pour les adresses IPv4
+ * @author J. Desvignes
  */
 
-public class IP
+public class IP implements Serializable
 {
 
     /** Les différents octets */
@@ -67,6 +72,33 @@ public class IP
             }
         }
         return false;
+    }
+
+    /**
+     * Convertit un string représentant une ipv4 en un objet IP
+     * @param text le string représentant l'IP
+     * @return l'IP
+     * @throws BadCallException si l'IP envoyée est mauvaise
+     */
+    public static IP stringToIP(String text) throws BadCallException
+    {
+        String[] vals = text.toLowerCase().replaceAll(" ", "").split("\\.");
+        if(vals.length != 4)
+            throw new BadCallException();
+        try
+        {
+            int o1 = Integer.parseInt(vals[0]);
+            int o2 = Integer.parseInt(vals[1]);
+            int o3 = Integer.parseInt(vals[2]);
+            int o4 = Integer.parseInt(vals[3]);
+            if( (o1>255) || (o1<0) || (o2>255) || (o2<0) || (o3>255) || (o3<0) || (o4>255) || (o4<0) )
+                throw new BadCallException();
+            return new IP(o1, o2, o3, o4);
+        }
+        catch(NumberFormatException e)
+        {
+            throw new BadCallException();
+        }
     }
 
     @Override

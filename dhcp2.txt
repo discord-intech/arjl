@@ -1,0 +1,25 @@
+add pc pc
+add standardswitch sw
+add dhcpserver dhcp
+link pc sw eth
+link dhcp sw eth
+edit dhcp
+verbose on
+addrange 0.0.0.0 192.168.1.5 192.168.1.45
+config 0
+setip 192.168.1.3
+exit
+exit
+startall
+edit pc
+verbose on
+dhcprequest 0
+exit
+add ftpserver ftp
+link ftp sw eth
+edit ftp
+verbose on
+start
+dhcprequest 0
+exit
+edit pc

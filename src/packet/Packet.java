@@ -3,9 +3,14 @@ package packet;
 import enums.PacketTypes;
 import packet.data.DHCPData;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Packet
+/**
+ * Classe représentant les paquets transitants entre les appareils
+ * @author J. Desvignes
+ */
+public class Packet implements Serializable
 {
     /** IP et MAC du destinataire */
     public IP dst_addr;
@@ -88,6 +93,15 @@ public class Packet
         this.data=p.getData();
         this.TTL = p.getTTL();
 
+    }
+
+    /**
+     * Constructeur bidon, vide à ne pas utiliser
+     */
+    public Packet()
+    {
+        this.type = PacketTypes.WEB;
+        this.tracked = true;
     }
 
     /**

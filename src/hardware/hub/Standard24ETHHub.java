@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 /**
  * Classe définissant un HUB classique à 24 ports Gigabit Ethernet
+ * @author J. Desvignes
  */
 public class Standard24ETHHub extends AbstractHub
 {
@@ -21,6 +22,6 @@ public class Standard24ETHHub extends AbstractHub
               }},
                 new ArrayList<Bandwidth>(){{
                     add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G); add(Bandwidth.ETH_1G);
-                }}, 100);
+                }});
     }
 }

@@ -3,12 +3,14 @@ package table;
 
 import packet.IP;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Classe définissant une table ARP
+ * @author J. Desvignes
  */
-public class ARPTable
+public class ARPTable implements Serializable
 {
 	/** Les IPs */
     private ArrayList<IP> ips = new ArrayList<>();

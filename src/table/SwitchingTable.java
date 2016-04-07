@@ -1,11 +1,13 @@
 package table;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Classe définissant les tables de commutation
+ * @author J. Desvignes
  */
-public class SwitchingTable
+public class SwitchingTable implements Serializable
 {
     /** Les MACs */
     private final ArrayList<Integer> macs = new ArrayList<>();
@@ -36,4 +38,20 @@ public class SwitchingTable
         return -1;
     }
 
+    /**
+     * Supprime toutes les règles associées à un port (en cas de deconnexion)
+     * @param port le port
+     */
+    public void removeRules(int port)
+    {
+        for(int i=0 ; i<ports.size() ; i++)
+        {
+            if(port == ports.get(i))
+            {
+                this.ports.remove(i);
+                this.macs.remove(i);
+                i--;
+            }
+        }
+    }
 }

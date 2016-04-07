@@ -1,14 +1,17 @@
 package table;
 
 
+import exceptions.BadCallException;
 import packet.IP;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Classe définissant la base de données DHCP, incluant les plages adressables par sous-résea
+ * Classe définissant la base de données DHCP, incluant les plages adressables par sous-réseau
+ * @author J. Desvignes
  */
-public class DHCPTable
+public class DHCPTable implements Serializable
 {
 	/** les sous-réseaux */
     private ArrayList<IP> subnets = new ArrayList<>();
@@ -43,6 +46,48 @@ public class DHCPTable
     {
         this.subnets.add(subnet);
         this.ranges.add(range);
+    }
+
+    /**
+     * Renvoie littéralement les plages
+     * sous-réseau IPmin IPmax
+     */
+    public ArrayList<ArrayList<IP>> getAllRanges()
+    {
+        ArrayList<ArrayList<IP>> res = new ArrayList<>();
+        for(int i=0 ; i<subnets.size() ; i++)
+        {
+            ArrayList<IP> temp = new ArrayList<>();
+            temp.add(subnets.get(i));
+            temp.add(ranges.get(i)[0]);
+            temp.add(ranges.get(i)[1]);
+            res.add(temp);
+        }
+        return res;
+    }
+
+    /**
+     * Remplace les plages par le tableau fourni ; non destructif si erreur
+     */
+    public void setAllRanges( ArrayList<ArrayList<IP>> ranges) throws BadCallException
+    {
+        ArrayList<IP> subnet = new ArrayList<>();
+        ArrayList<IP[]> range = new ArrayList<>();
+
+        for(ArrayList<IP> line : ranges)
+        {
+            if(line.size() != 3)
+                throw new BadCallException();
+
+            subnet.add(line.get(0));
+            IP[] r = new IP[2];
+            r[0] = line.get(1);
+            r[1] = line.get(2);
+            range.add(r);
+        }
+
+        this.subnets = subnet;
+        this.ranges = range;
     }
 
 }

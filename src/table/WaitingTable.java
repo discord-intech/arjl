@@ -1,16 +1,19 @@
 package table;
 
 import enums.PacketTypes;
+import hardware.AbstractHardware;
 import packet.IP;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Cette table représente les attentes d'un client en terme de réponse d'un serveur
  * Elle représente les transactions en attente et le temps écoulé depuis l'envoi de la demande
  * Elle est surtout utile pour représenter le "TimeOut" d'une requête
+ * @author J. Desvignes
  */
-public class WaitingTable
+public class WaitingTable implements Serializable
 {
     /** Représente le type de requète envoyé */
     private final ArrayList<PacketTypes> types = new ArrayList<>();
@@ -18,8 +21,8 @@ public class WaitingTable
     /** L'adresse IP du serveur dont on attends la réponse*/
     private final ArrayList<IP> servers = new ArrayList<>();
 
-    /** Le temps écoulé */
-    private final ArrayList<Integer> timing = new ArrayList<>();
+    /** L'instant auquel la demande a été formulée */
+    private final ArrayList<Long> timing = new ArrayList<>();
 
     /**
      * Nombres de paquets attendus restants
@@ -31,13 +34,13 @@ public class WaitingTable
      * Incrémente les autres attentes de 1
      * @return true s'il y a eu un timeout, false sinon
      */
-    public boolean isThereATimeout()
+    public synchronized boolean isThereATimeout()
     {
         boolean res = false;
-
+        long now = System.currentTimeMillis();
         for(int i=0 ; i<types.size() ; i++)
         {
-            if(types.get(i).time < timing.get(i))
+            if(now-timing.get(i) >= (int)(types.get(i).time* AbstractHardware.TIMESPEED))
             {
                 timing.remove(i);
                 types.remove(i);
@@ -45,9 +48,7 @@ public class WaitingTable
                 numberOfPackets.remove(i);
                 i--;
                 res = true;
-                continue;
             }
-            this.timing.set(i, timing.get(i)+1);
         }
         return res;
     }
@@ -57,11 +58,11 @@ public class WaitingTable
      * @param type le type de paquet en attente
      * @param dst le serveur dont on attend la réponse
      */
-    public void addWaiting(PacketTypes type, IP dst)
+    public synchronized void addWaiting(PacketTypes type, IP dst)
     {
         this.types.add(type);
         this.servers.add(dst);
-        this.timing.add(0);
+        this.timing.add(System.currentTimeMillis());
         this.numberOfPackets.add(type.size);
     }
 
@@ -70,7 +71,7 @@ public class WaitingTable
      * @param type le type reçu
      * @param dst le serveur répondant
      */
-    public void removeWaiting(PacketTypes type, IP dst)
+    public synchronized void removeWaiting(PacketTypes type, IP dst)
     {
         for(int i=0 ; i<types.size() ; i++)
         {
@@ -88,12 +89,12 @@ public class WaitingTable
     /**
      * Es-ce que ce j'attends une réponse de ce serveur?
      * Décrémente le nombre de paquets attendus si oui
-     * Si ce dernier atteind0, la requête est supprimée
+     * Si ce dernier atteind 0, la requête est supprimée
      * @param type le type reçu
      * @param dst le serveur ayant répondu
      * @return true si oui, false sinon
      */
-    public boolean doIWaitForIt(PacketTypes type, IP dst)
+    public synchronized boolean doIWaitForIt(PacketTypes type, IP dst)
     {
         for(int i=0 ; i<types.size() ; i++)
         {
@@ -101,7 +102,12 @@ public class WaitingTable
             {
                 numberOfPackets.set(i, numberOfPackets.get(i)-1);
                 if(numberOfPackets.get(i) == 0)
+                {
                     this.removeWaiting(type, dst);
+                    System.out.println("Requête "+type.name()+" réussie");
+                }
+                else
+                    timing.set(i, System.currentTimeMillis());
                 return true;
             }
         }
@@ -111,9 +117,30 @@ public class WaitingTable
     /**
      * Es-ce que j'attends une réponse ?
      */
-    public boolean AmIWaitingForSomething()
+    public synchronized boolean AmIWaitingForSomething()
     {
-        return types.isEmpty();
+        return !types.isEmpty();
     }
 
+    /**
+     * Vide la table d'attente
+     */
+    public synchronized void clear()
+    {
+        this.types.clear();
+        this.servers.clear();
+        this.timing.clear();
+        this.numberOfPackets.clear();
+    }
+
+    /**
+     * Progrès de la requête principale en cours
+     * @return le % d'avancement
+     */
+    public synchronized int progress()
+    {
+        if(!numberOfPackets.isEmpty())
+            return (int)((this.types.get(0).size - (double)this.numberOfPackets.get(0)) / this.types.get(0).size * 100);
+        return 0;
+    }
 }

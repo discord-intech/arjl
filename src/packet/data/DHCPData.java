@@ -15,6 +15,7 @@ import java.util.ArrayList;
  *  - Le serveur la valide (ou non) et renvoie un OK (ou renvoie une plage modifiée)
  *  - Le client ACK et utilise l'IP
  *  - FIN DU DHCP
+ *  @author J. Desvignes
  */
 public class DHCPData
 {

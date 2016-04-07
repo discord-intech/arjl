@@ -5,12 +5,14 @@ import enums.Bandwidth;
 import enums.LinkTypes;
 import exceptions.BadCallException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Classe définissant les liens entre appareils
+ * @author J. Desvignes
  */
-public class Link
+public class Link implements Serializable
 {
 
     /** Le premier appareil */
@@ -81,12 +83,12 @@ public class Link
      * @param hardware l'appareil qui fait la demande
      * @throws BadCallException si l'appareil donné n'est même par relié au lien
      */
-    public AbstractHardware getOtherHardware(AbstractHardware hardware) throws BadCallException {
+    public AbstractHardware getOtherHardware(AbstractHardware hardware){
         if(hard1 == hardware)
             return hard2;
         else if(hard2 == hardware)
             return hard1;
-        throw new BadCallException();
+        return null;
     }
 
     /**

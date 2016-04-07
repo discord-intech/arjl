@@ -4,6 +4,8 @@ import actions.Actions;
 import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
+import exceptions.OverflowException;
+import hardware.AbstractHardware;
 import hardware.client.StandardPC;
 import hardware.hub.Standard24ETHHub;
 import hardware.router.Standard2ETHRouter;
@@ -15,6 +17,10 @@ import packet.IP;
 
 import java.util.ArrayList;
 
+/**
+ * JUnit de test réseau
+ * @author J. Desvignes
+ */
 public class JUnit_networking
 {
     /**
@@ -53,8 +59,8 @@ public class JUnit_networking
             Standard24ETHSwitch srA = new Standard24ETHSwitch();
             Standard24ETHHub srB = new Standard24ETHHub();
 
-            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(192,168,0,1), 1);
-            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(192,168,1,1), 1);
+            central.addRoutingRule(0, new IP(192,168,0,0), new IP(255,255,255,0), new IP(192,168,0,1));
+            central.addRoutingRule(1, new IP(192,168,1,0), new IP(255,255,255,0), new IP(192,168,1,1));
 
             Actions.connect(A, srA, LinkTypes.ETH);
             Actions.connect(B, srB, LinkTypes.ETH);
@@ -74,51 +80,57 @@ public class JUnit_networking
             central.setDHCPRelay(new IP(192,168,1,8));
 
             StandardPC DHCPtester = new StandardPC(21);
+            DHCPtester.setVerbose("DHCPserv");
+            jeanLuc_PC.setVerbose("JeanLuc");
+            A.setVerbose("Routeur A");
+            WEB.setVerbose("WEB");
             Actions.connect(DHCPtester, srA, LinkTypes.ETH);
-            DHCPtester.DHCPClient();
+            DHCPtester.DHCPClient(0);
+
+            AbstractHardware.setSpeed((float)0.1);
+
+            A.start();
+            B.start();
+            D.start();
+            C.start();
+            srA.start();
+            srB.start();
+            central.start();
+            jeanLuc_PC.start();
+            raymondPC.start();
+            WEB.start();
+            DHCPtester.start();
+            dhcp.start();
+
+            A.changeState(true);
+            B.changeState(true);
+            D.changeState(true);
+            C.changeState(true);
+            srA.changeState(true);
+            srB.changeState(true);
+            central.changeState(true);
+            jeanLuc_PC.changeState(true);
+            raymondPC.changeState(true);
+            WEB.changeState(true);
+            DHCPtester.changeState(true);
+            dhcp.changeState(true);
 
             while(true)
             {
-                A.treat();
-                B.treat();
-                D.treat();
-                C.treat();
-                srA.treat();
-                srB.treat();
-                central.treat();
-                jeanLuc_PC.treat();
-                raymondPC.treat();
-                WEB.treat();
-                DHCPtester.treat();
-                dhcp.treat();
-
-                A.validateStack();
-                B.validateStack();
-                D.validateStack();
-                C.validateStack();
-                srA.validateStack();
-                srB.validateStack();
-                central.validateStack();
-                jeanLuc_PC.validateStack();
-                raymondPC.validateStack();
-                WEB.validateStack();
-                DHCPtester.validateStack();
-                dhcp.validateStack();
-
-                Thread.sleep(500);
-
-                if(!jeanLuc_PC.waitsForSomething()) {
+                if (!jeanLuc_PC.waitsForSomething()) {
                     jeanLuc_PC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
                 }
-                if(!raymondPC.waitsForSomething()) {
+                if (!raymondPC.waitsForSomething()) {
                     raymondPC.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
                 }
-                if(!DHCPtester.waitsForSomething()) {
+                if (!DHCPtester.waitsForSomething()) {
                     DHCPtester.launchRequest(PacketTypes.WEB, new IP(192, 168, 1, 5));
                 }
-
             }
-        } catch (BadCallException | InterruptedException e) {
+
+        } catch (BadCallException e) {
+            e.printStackTrace();
+        } catch (OverflowException e) {
             e.printStackTrace();
         }
     }

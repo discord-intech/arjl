@@ -1,26 +1,27 @@
 package table;
 
+import exceptions.BadCallException;
 import packet.IP;
 import packet.Packet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Classe définissant les tables de routages, fonctionne selon la règle du plus grand masque
+ * @author J. Desvignes
  */
-public class RoutingTable
+public class RoutingTable implements Serializable
 {
 
     /** les sous-réseaux */
-    private final ArrayList<IP> subnets = new ArrayList<>();
+    private ArrayList<IP> subnets = new ArrayList<>();
     /** les masques de sous-réseau */
-    private final ArrayList<IP> masks = new ArrayList<>();
+    private ArrayList<IP> masks = new ArrayList<>();
     /** les passerelles (ou NHR) */
-    private final ArrayList<IP> gateways = new ArrayList<>();
+    private ArrayList<IP> gateways = new ArrayList<>();
     /** les numéros de port associés */
-    private final ArrayList<Integer> port_numbers = new ArrayList<>();
-    /** Métrique de la route */
-    private final ArrayList<Integer> metric = new ArrayList<>();
+    private ArrayList<Integer> port_numbers = new ArrayList<>();
 
     /**
      * Constructeur de la table
@@ -33,7 +34,6 @@ public class RoutingTable
         subnets.add(new IP(0,0,0,0));
         masks.add(new IP(0,0,0,0));
         gateways.add(default_gateway);
-        metric.add(255);
     }
 
     /**
@@ -45,19 +45,17 @@ public class RoutingTable
         subnets.add(new IP(0,0,0,0));
         masks.add(new IP(0,0,0,0));
         gateways.add(new IP(0,0,0,0));
-        metric.add(255);
     }
 
     /**
      * Ajoute une règle
      */
-    public synchronized void addRule(int port_number, IP subnet, IP mask, IP gateway, int metric)
+    public synchronized void addRule(int port_number, IP subnet, IP mask, IP gateway)
     {
         port_numbers.add(port_number);
         subnets.add(subnet);
         masks.add(mask);
         gateways.add(gateway);
-        this.metric.add(metric);
     }
 
     /**
@@ -79,31 +77,15 @@ public class RoutingTable
             }
         }
 
-        int j=0; // Cette variable représente le numéro d'entrée actuellement sélectionnée
+        if(pot_res.isEmpty())
+            return new ArrayList<Object>(){{add(port_numbers.get(0)); add(gateways.get(0));}};
 
-        //On prends le résultat avec la plus petite métrique
-        for(int i : pot_res)
-        {
-            if(metric.get(i) < metric.get(j))
-                j=i;
-        }
+        int j=pot_res.get(0); // Cette variable représente le numéro d'entrée actuellement sélectionnée
 
-        ArrayList<Integer> more_pot_res = new ArrayList<>(); // Autre liste pour stocker des résultats potentiels
+        for(int index : pot_res) //On prend celui au plus grand masque
+            if(masks.get(j).isSmallerThan(masks.get(index)))
+                j=index;
 
-        //On vérifie que l'on a pas plusieurs résultat avec la même métrique
-        for(int i=0 ; i < metric.size() ; i++)
-        {
-            if(pot_res.contains(i) && (metric.get(i).equals(metric.get(j))) && (i != j))
-                more_pot_res.add(i);
-        }
-
-        //Si c'est le cas, on prends celle avec le plus grand masque
-        if(!more_pot_res.isEmpty())
-        {
-            for(int index : more_pot_res)
-                if(!masks.get(j).isSmallerThan(masks.get(index)))
-                    j=index;
-        }
 
         res.add(port_numbers.get(j));
         res.add(gateways.get(j));
@@ -144,9 +126,110 @@ public class RoutingTable
     /**
      * Modifie la passerelle par défaut
      * @param gate l'IP de la passerelle
+     * @param port le port associé
      */
-    public void setDefaultGateway(IP gate)
+    public void setDefaultGateway(IP gate, int port)
     {
         this.gateways.set(0, gate);
+        this.port_numbers.set(0, port);
+    }
+
+
+    /**
+     * Affiche les routes dans l'Interface graphique
+     */
+    public void printRoutes()
+    {
+        System.out.println();
+        System.out.println("Sous-réseau   Masque   NHR   Numéro d'interface (port)");
+        for(int i=0 ; i<subnets.size() ; i++)
+        {
+            System.out.println(subnets.get(i)+"   "+masks.get(i)+"   "+gateways.get(i)+"   "+port_numbers.get(i));
+        }
+    }
+
+
+    /**
+     * Vide la table de routage hors route par défaut
+     */
+    public void clearRoutes()
+    {
+        int max = subnets.size();
+        for(int i=1 ; i<max ; i++)
+        {
+            subnets.remove(subnets.size()-1);
+            gateways.remove(gateways.size()-1);
+            masks.remove(masks.size()-1);
+            port_numbers.remove(port_numbers.size()-1);
+        }
+    }
+
+    /**
+     * Revoie les routes sous forme de string
+     */
+    public ArrayList<String> getRoutes()
+    {
+        ArrayList<String> res = new ArrayList<>();
+        for(int i=0 ; i<subnets.size() ; i++)
+        {
+            res.add(subnets.get(i).toString()+"   "+masks.get(i).toString()+"   "+gateways.get(i).toString()+"   "+port_numbers.get(i).toString());
+        }
+        return res;
+    }
+
+    /**
+     * Renvoie littéralement les routes
+     */
+    public ArrayList<ArrayList<Object>> getAllRoutes()
+    {
+        ArrayList<ArrayList<Object>> res = new ArrayList<>();
+        for(int i=0 ; i<subnets.size() ; i++)
+        {
+            ArrayList<Object> temp = new ArrayList<>();
+            temp.add(subnets.get(i));
+            temp.add(masks.get(i));
+            temp.add(gateways.get(i));
+            temp.add(port_numbers.get(i));
+            res.add(temp);
+        }
+        return res;
+    }
+
+    /**
+     * REmplace les routes par le tableau fourni ; non destructif si erreur
+     * @throws BadCallException si une des routes est mauvaise
+     */
+    public void setAllRoutes( ArrayList<ArrayList<Object>> routes, int numberOfPorts) throws BadCallException
+    {
+        ArrayList<IP> subnet = new ArrayList<>();
+        ArrayList<IP> mask = new ArrayList<>();
+        ArrayList<IP> gateway = new ArrayList<>();
+        ArrayList<Integer> port_number = new ArrayList<>();
+
+        for(ArrayList<Object> line : routes)
+        {
+            if(line.size() != 4 || !(line.get(0) instanceof IP) || !(line.get(1) instanceof IP)
+                    || !(line.get(2) instanceof IP) || !(line.get(3) instanceof Integer))
+            {
+                throw new BadCallException();
+            }
+
+            subnet.add((IP)line.get(0));
+            mask.add((IP)line.get(1));
+            gateway.add((IP)line.get(2));
+            port_number.add((Integer)line.get(3));
+            if(port_number.get(port_number.size()-1) >= numberOfPorts)
+                throw new BadCallException();
+        }
+
+        this.subnets = subnet;
+        this.gateways = gateway;
+        this.masks = mask;
+        this.port_numbers = port_number;
+    }
+
+    public IP getDefaultGateway()
+    {
+        return this.gateways.get(0);
     }
 }

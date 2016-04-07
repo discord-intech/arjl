@@ -2,11 +2,13 @@ package hardware.client;
 
 
 import enums.Bandwidth;
+import enums.ClockSpeed;
 import enums.LinkTypes;
 import exceptions.BadCallException;
 
 /**
  * Classe définissant un PC classique
+ * @author J. Desvignes
  */
 public class StandardPC extends AbstractClient
 {
@@ -18,7 +20,7 @@ public class StandardPC extends AbstractClient
      * @param default_gateway la passerelle par défaut
      */
     public StandardPC(int MAC, packet.IP IP, packet.IP default_gateway) throws BadCallException {
-        super(LinkTypes.ETH, Bandwidth.ETH_1G, 20, MAC, IP, default_gateway);
+        super(LinkTypes.ETH, Bandwidth.ETH_1G, 5971, MAC, IP, default_gateway, ClockSpeed.MEDIUM);
     }
 
     /**
@@ -26,6 +28,6 @@ public class StandardPC extends AbstractClient
      * @param MAC la MAC de l'appareil
      */
     public StandardPC(int MAC) throws BadCallException {
-        super(LinkTypes.ETH, Bandwidth.ETH_1G, 20, MAC);
+        super(LinkTypes.ETH, Bandwidth.ETH_1G, 5971, MAC, ClockSpeed.MEDIUM);
     }
 }

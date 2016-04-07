@@ -1,9 +1,11 @@
 package hardware.client;
 
 import enums.Bandwidth;
+import enums.ClockSpeed;
 import enums.LinkTypes;
 import enums.PacketTypes;
 import exceptions.BadCallException;
+import exceptions.OverflowException;
 import hardware.router.AbstractRouter;
 import packet.IP;
 import packet.Packet;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 
 /**
  * Classe abstraite définissant les clients (end-user)
+ * @author J. Desvignes
  */
 public abstract class AbstractClient extends AbstractRouter
 {
@@ -24,7 +27,19 @@ public abstract class AbstractClient extends AbstractRouter
     /**
      * Table d'attente de réponses
      */
-    protected final WaitingTable waitingRequests = new WaitingTable();
+    protected WaitingTable waitingRequests = new WaitingTable();
+
+    /** Si le client est en mode répétition de demande */
+    protected boolean repetitiveRequest = false;
+
+    /** Type de demande à répéter */
+    protected PacketTypes requestType;
+
+    /** Le serveur vers qui envoyer la demande */
+    protected IP server;
+
+    /** Temps d'attente (ms) entre chaque demande réussie */
+    protected int waitingTime;
 
 
     /**
@@ -38,9 +53,9 @@ public abstract class AbstractClient extends AbstractRouter
      * @param default_gateway la passerelle par défaut
      */
     public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC,
-                          IP IP, IP default_gateway) throws BadCallException {
+                          IP IP, IP default_gateway, ClockSpeed speed) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(){{add(IP);}},
-                default_gateway, 0);
+                default_gateway, 0, speed);
         this.IP = IP;
         this.MAC = MAC;
     }
@@ -53,17 +68,20 @@ public abstract class AbstractClient extends AbstractRouter
      * @param overflow       maximum de paquets supportables dans son tampon de traitement
      * @param MAC  la mac de l'appareil
      */
-    public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC) throws BadCallException {
+    public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC, ClockSpeed speed) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}},
-                new ArrayList<>());
+                new ArrayList<IP>(){{add(null);}}, speed);
         this.MAC = MAC;
     }
 
     @Override
-    public void receive(Packet packet, int port)
-    {
+    public void receive(Packet packet, int port) throws OverflowException {
+        if(this.stack.size() >= this.overflowValue)
+            throw new OverflowException(this);
         packet.lastPort = port;
-        this.futureStack.add(packet);
+        synchronized (this.ports) {
+            this.stack.add(packet);
+        }
     }
 
     @Override
@@ -81,15 +99,20 @@ public abstract class AbstractClient extends AbstractRouter
      */
     public synchronized void launchRequest(PacketTypes type, IP destination)
     {
-        if(this.awaitingForIP)
+        if(this.awaitingForIP[0])
         {
             return;
         }
         if(type == PacketTypes.WEB)
         {
-            futureStack.add(new Packet(destination, this.IP, this.MAC, -1, PacketTypes.WEB, false, false));
+            stack.add(new Packet(destination, this.IPinterfaces.get(0), this.MACinterfaces.get(0), -1, PacketTypes.WEB, false, false));
             waitingRequests.addWaiting(PacketTypes.WEB, destination);
             //System.out.println(this.IP+" : Envoi requête WEB vers "+destination);
+        }
+        else if(type == PacketTypes.FTP)
+        {
+            stack.add(new Packet(destination, this.IPinterfaces.get(0), this.MACinterfaces.get(0), -1, PacketTypes.FTP, false, false));
+            waitingRequests.addWaiting(PacketTypes.FTP, destination);
         }
     }
 
@@ -108,6 +131,51 @@ public abstract class AbstractClient extends AbstractRouter
     public boolean timeoutCheck()
     {
         return this.waitingRequests.isThereATimeout();
+    }
+
+    public int progress()
+    {
+        return this.waitingRequests.progress();
+    }
+
+    /**
+     * Permet de lancer une requête si elle a été mise en répétition, dans la boucle treat
+     */
+    @Override
+    protected void clientRequest()
+    {
+        if(this.repetitiveRequest && !waitsForSomething())
+        {
+            try {
+                Thread.sleep(waitingTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            this.launchRequest(requestType, server);
+        }
+    }
+
+    /**
+     * Lance une requête répétitive ; une seule par client
+     * @param type le type de requête
+     * @param server l'IP du serveur cible
+     * @param waitingTime le temps de traitement en ms à chaque transaction réussie
+     */
+    public void setRepetitiveRequest(PacketTypes type, IP server, int waitingTime)
+    {
+        this.server = server;
+        this.requestType = type;
+        this.waitingTime = waitingTime;
+        this.repetitiveRequest = true;
+    }
+
+    /**
+     * Arrête une requête répétitive
+     */
+    public void stopRepetitiveRequest()
+    {
+        this.repetitiveRequest = false;
+        this.waitingRequests.clear();
     }
 
 }

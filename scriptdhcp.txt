@@ -1,0 +1,46 @@
+add pc pc
+add standardrouter rout
+add standardswitch sra
+add standardswitch srb
+add webserver web
+add dhcpserver dhcp
+link sra pc eth
+link srb dhcp eth
+link srb web eth
+link sra rout eth
+link srb rout eth
+speed 0.1
+edit dhcp
+verbose on
+gateway 192.168.1.1
+addrange 192.168.0.0 192.168.0.5 192.168.0.254
+addrange 192.168.1.0 192.168.1.5 192.168.1.254
+config 0
+setip 192.168.1.3
+exit
+exit
+edit pc
+verbose on
+exit
+edit web
+verbose on
+gateway 192.168.1.1
+config 0
+setip 192.168.1.2
+exit
+exit
+edit rout
+verbose on
+dhcprelay on 192.168.1.3
+config 0
+setip 192.168.0.1
+exit
+config 1
+setip 192.168.1.1
+exit
+addroute 192.168.1.0 255.255.255.0 192.168.1.1 1
+addroute 192.168.0.0 255.255.255.0 192.168.0.1 0
+exit
+startall
+edit pc
+dhcprequest 0
