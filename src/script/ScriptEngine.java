@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package script;
 
 import actions.Actions;
@@ -6,16 +28,19 @@ import enums.LinkTypes;
 import enums.Order;
 import enums.PacketTypes;
 import exceptions.BadCallException;
+import exceptions.BadWANTable;
 import exceptions.OverflowException;
 import hardware.AbstractHardware;
 import hardware.Link;
 import hardware.client.AbstractClient;
 import hardware.router.AbstractRouter;
+import hardware.router.WANPort;
 import hardware.server.AbstractServer;
 import hardware.server.DHCPServer;
 import packet.IP;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -47,7 +72,7 @@ public class ScriptEngine extends Thread
     @Override
     public void run()
     {
-        System.out.println("Inteface NO-GUI de Network Simulator 2016 lancée");
+        System.out.println("Interface NO-GUI d'ARJL lancée");
         while(true)
         {
 
@@ -490,6 +515,88 @@ public class ScriptEngine extends Thread
                 System.out.println(nomAppareil+" arrêté");
                 hard.changeState(false);
             }
+            else if(orders.get(0).equals(Order.RIP.order))
+            {
+                if(orders.size() != 2 || !(orders.get(1).equals("on") || orders.get(1).equals("off")))
+                {
+                    System.out.println("BAD ARGS : "+Order.RIP.order+" on/off");
+                    continue;
+                }
+
+                if(!(hard instanceof AbstractRouter) || hard instanceof AbstractClient || hard instanceof AbstractServer || hard instanceof WANPort)
+                {
+                    System.out.println("Cet appareil n'est pas un routeur");
+                }
+
+                if(orders.get(1).equals("on"))
+                {
+                    ((AbstractRouter)hard).activateRIP();
+                } else {
+                    ((AbstractRouter)hard).desactivateRIP();
+                }
+            }
+            else if(orders.get(0).equals(Order.MULTIPROCESSIP.order))
+            {
+                IP ip;
+                if(orders.size() != 2)
+                {
+                    System.out.println("BAD ARGS : "+Order.MULTIPROCESSIP.order+" <IP>");
+                    continue;
+                }
+
+                if(!(hard instanceof WANPort))
+                {
+                    System.out.println("Cet appareil n'est pas un port WAN");
+                }
+
+                try {
+                    ip = IP.stringToIP(orders.get(1));
+                } catch (BadCallException e) {
+                    System.out.println("Mauvaise IP entrée");
+                    continue;
+                }
+
+                try {
+                    ((WANPort)hard).setServerIP(ip.toString());
+                } catch (BadCallException|ConnectException e) {
+                    System.out.println("Erreur de création du socket client !");
+                } catch (BadWANTable e) {
+                    System.out.println("Doublon(s) de sous-réseau(x) sur le serveur !");
+                    e.conflicts.printSubnets();
+                }
+
+            }
+            else if(orders.get(0).equals(Order.PRINTSUB.order))
+            {
+                if(!(hard instanceof WANPort))
+                {
+                    System.out.println("Cet appareil n'est pas un port WAN");
+                }
+                ((WANPort)hard).printSubnets();
+            }
+            else if(orders.get(0).equals(Order.ADDSUB.order))
+            {
+                IP ips, ipm;
+                if(orders.size() != 3)
+                {
+                    System.out.println("BAD ARGS : "+Order.ADDSUB.order+" <IP subnet> <IP mask>");
+                    continue;
+                }
+
+                if(!(hard instanceof WANPort))
+                {
+                    System.out.println("Cet appareil n'est pas un port WAN");
+                }
+
+                try {
+                    ips = IP.stringToIP(orders.get(1));
+                    ipm = IP.stringToIP(orders.get(2));
+                } catch (BadCallException e) {
+                    System.out.println("Mauvaise IP entrée");
+                    continue;
+                }
+                ((WANPort)hard).addSubnet(ips, ipm);
+            }
             else if(orders.get(0).equals(Order.DHCP.order))
             {
                 int port;
@@ -544,7 +651,7 @@ public class ScriptEngine extends Thread
                 if(orders.get(1).equals("null") || (type = PacketTypes.getType(orders.get(1))) == null)
                 {
                     System.out.println("Mauvais type de packet");
-                    return;
+                    continue;
                 }
                 try
                 {
@@ -553,7 +660,7 @@ public class ScriptEngine extends Thread
                 catch (BadCallException e)
                 {
                     System.out.println("Mauvaise IP entrée");
-                    return;
+                    continue;
                 }
                 try
                 {
@@ -561,13 +668,13 @@ public class ScriptEngine extends Thread
                     if(wait<0)
                     {
                         System.out.println("Mauvaise valeur d'attente");
-                        return;
+                        continue;
                     }
                 }
                 catch (NumberFormatException e)
                 {
                     System.out.println("Mauvaise valeur d'attente");
-                    return;
+                    continue;
                 }
                 System.out.println(nomAppareil+" lance une requête répétitive "+orders.get(1)+" vers "+serv.toString());
                 ((AbstractClient)hard).setRepetitiveRequest(type, serv, wait);
@@ -602,7 +709,7 @@ public class ScriptEngine extends Thread
             }
             else if(orders.get(0).equals(Order.DHCPRELAY.order))
             {
-                if(!(orders.size() == 3 || orders.size() == 2) && !(orders.get(1).equals("on") || orders.get(1).equals("off")))
+                if(!(orders.size() == 3 || orders.size() == 2) || !(orders.get(1).equals("on") || orders.get(1).equals("off")))
                     System.out.println("BAD ARGS : "+Order.DHCPRELAY.order+" <on/off> <IPserveurDHCP>");
                 else
                 {
@@ -648,7 +755,7 @@ public class ScriptEngine extends Thread
                 if(orders.get(1).equals("null") || (type = PacketTypes.getType(orders.get(1))) == null)
                 {
                     System.out.println("Mauvais type de packet");
-                    return;
+                    continue;
                 }
                 try
                 {
@@ -657,7 +764,7 @@ public class ScriptEngine extends Thread
                 catch (BadCallException e)
                 {
                     System.out.println("Mauvaise IP entrée");
-                    return;
+                    continue;
                 }
                 System.out.println(nomAppareil+" lance une requête "+orders.get(1)+" vers "+serv.toString());
                 ((AbstractClient)hard).launchRequest(type, serv);
@@ -691,7 +798,7 @@ public class ScriptEngine extends Thread
             }
             else if(orders.get(0).equals(Order.PRINTROUTES.order))
             {
-                if((hard instanceof AbstractClient || hard instanceof AbstractServer) || !(hard instanceof AbstractRouter))
+                if((hard instanceof AbstractClient || hard instanceof AbstractServer) || !(hard instanceof AbstractRouter) || hard instanceof WANPort)
                 {
                     System.out.println("Réservé aux routeurs");
                     continue;
@@ -707,7 +814,7 @@ public class ScriptEngine extends Thread
                     System.out.println("BAD ARGS : "+Order.ADDROUTE.order+" <IPsousréseau> <masque> <IPpasserelle> <noInterface>");
                     continue;
                 }
-                if(!(hard instanceof AbstractRouter))
+                if(!(hard instanceof AbstractRouter) || hard instanceof WANPort ||(hard instanceof AbstractClient || hard instanceof AbstractServer))
                 {
                     System.out.println("Réservé aux routeurs");
                     continue;
@@ -746,7 +853,7 @@ public class ScriptEngine extends Thread
             }
             else if(orders.get(0).equals(Order.CLEARROUTES.order))
             {
-                if(!(hard instanceof AbstractRouter))
+                if(!(hard instanceof AbstractRouter) || hard instanceof WANPort ||(hard instanceof AbstractClient || hard instanceof AbstractServer))
                 {
                     System.out.println("Réservé aux routeurs");
                     continue;

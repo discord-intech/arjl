@@ -38,6 +38,7 @@ exit
 config 1
 setip 192.168.1.1
 exit
+verbose on
 addroute 192.168.1.0 255.255.255.0 192.168.1.1 1
 addroute 192.168.0.0 255.255.255.0 192.168.0.1 0
 exit

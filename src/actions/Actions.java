@@ -1,3 +1,27 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
+
 package actions;
 
 import enums.Bandwidth;
@@ -9,6 +33,7 @@ import graphics.DeviceManager;
 import graphics.ImageToSave;
 import graphics.LinkToSave;
 import hardware.AbstractHardware;
+import hardware.client.AbstractClient;
 import hardware.router.AbstractRouter;
 import hardware.Link;
 
@@ -369,6 +394,13 @@ public class Actions
         {
             e.printStackTrace();
             throw new BadCallException();
+        }
+
+        // Au cas où l'on a chargé des clients en pleine repetitiverequest, on les arrête
+        for(Object i : res.get(1))
+        {
+            if(i instanceof AbstractClient)
+                ((AbstractClient) i).stopRepetitiveRequest();
         }
 
         return res;

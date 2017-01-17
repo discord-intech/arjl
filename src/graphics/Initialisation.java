@@ -1,9 +1,32 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package graphics;
 
 
 import exceptions.BadCallException;
 import exceptions.OverflowException;
 import graphics.JeNeSuisPasLa.Chat;
+import hardware.AbstractHardware;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -12,6 +35,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -22,8 +46,6 @@ import javafx.stage.Stage;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
-
-import static graphics.DeviceManager.updateLink;
 
 /**
  * Class qui créer la fenetre graphique
@@ -36,10 +58,13 @@ ActualizeThread actualizeThread = new ActualizeThread();
      * init
      * @param primaryStage  Fenetre
      */
+
     public void init (Stage primaryStage) {
 
+        //Init du ThreadThread
+        DeviceManager.mainThread=Thread.currentThread();
 
-
+        DeviceManager.graphic = true;
 
 
         //AnchorPane principale
@@ -78,10 +103,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
         closeButton.setMnemonicParsing(false);
         filemenu.getItems().add(closeButton);
 
-        //A supprimer mais pas tout de suite
-        MenuItem testButton = new MenuItem("TEST");
-        testButton.setMnemonicParsing(false);
-        filemenu.getItems().add(testButton);
+
 
         Menu editmenu = new Menu("Edit");
         editmenu.setMnemonicParsing(false);
@@ -141,24 +163,203 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         ToolBar controlebar = new ToolBar();
         controlebar.setLayoutY(29);
-        controlebar.setPrefHeight(29);
+        controlebar.setPrefHeight(35);
         controlebar.setPrefWidth(1000);
         AnchorPane.setLeftAnchor(controlebar,0.0);
         AnchorPane.setRightAnchor(controlebar,0.0);
         anchorPane.getChildren().add(controlebar);
 
 
-        Button playButton = new Button();
-        playButton.setStyle("-fx-background-image: url('file:sprites/play.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
-        playButton.setPrefWidth(20);
-        playButton.setPrefHeight(20);
+        Button pauseButton = new Button("Pause");
+        pauseButton.setDisable(true);
 
-        playButton.setLayoutY(controlebar.getLayoutY()+1);
 
-        anchorPane.getChildren().add(playButton);
 
-        AnchorPane.setRightAnchor(playButton,0.0);
+        controlebar.getItems().add(pauseButton);
+
+        Button playButton = new Button("Play");
+        playButton.setDisable(false);
+
+        controlebar.getItems().add(playButton);
+
+        Text speedtext = new Text("Simulation's Speed");
+        controlebar.getItems().add(speedtext);
+
+        Slider sliderSpeed = new Slider(0.25,8.0,0.25);
+        sliderSpeed.setValue(1.0);
+        controlebar.getItems().add(sliderSpeed);
+
+        TextField speedField = new TextField("1.00");
+        speedField.setPrefWidth(38);
+        speedField.setDisable(false);
+        controlebar.getItems().add(speedField);
+
+
+        speedField.setOnAction(event-> {
+            String str = speedField.getText();
+            double speed;
+
+            try{
+                speed=Double.parseDouble(str);
+                if(speed<0.25 | speed > 8) {
+                    throw new NumberFormatException("pas bien vilain maraud !");
+                } else {
+                    sliderSpeed.setValue(speed);
+                    float speedFloat=(float) speed;
+                    AbstractHardware.setSpeed(speedFloat);
+                }
+
+
+            }
+            catch(NumberFormatException e) {
+                speed = sliderSpeed.getValue();
+                float speedFloat = (float) speed;
+                int speedInt = (int) (speedFloat*100);
+                float speedFloat2 = speedInt;
+                speedFloat2=speedFloat2/100;
+
+                speedField.setText(Float.toString(speedFloat2));
+                DeviceManager.afficheError("Incorrect Value");
+
+            } catch (BadCallException e) {
+                e.printStackTrace();
+            }
+
+
+        });
+
+        sliderSpeed.setOnMouseReleased(event-> {
+            double speed = sliderSpeed.getValue();
+            float speedFloat = (float) speed;
+            int speedInt = (int) (speedFloat*100);
+            float speedFloat2 = speedInt;
+            speedFloat2=speedFloat2/100;
+
+            speedField.setText(Float.toString(speedFloat2));
+
+            try {
+                AbstractHardware.setSpeed(speedFloat);
+            } catch (BadCallException e) {
+                e.printStackTrace();
+            }
+
+
+        });
+
+        Text zoomtext = new Text("Zoom");
+        controlebar.getItems().add(zoomtext);
+
+        Slider sliderZoom = new Slider(0.25,2.0,0.25);
+        sliderZoom.setValue(1.0);
+        controlebar.getItems().add(sliderZoom);
+        DeviceManager.setZoomSlider(sliderZoom);
+
+
+        TextField zoomField = new TextField("1.00");
+        zoomField.setPrefWidth(38);
+        zoomField.setDisable(false);
+        controlebar.getItems().add(zoomField);
+        DeviceManager.setZoomField(zoomField);
+
+
+        zoomField.setOnAction(event-> {
+            String str = zoomField.getText();
+            double speed;
+
+            try{
+                speed=Double.parseDouble(str);
+                if(speed<0.25 | speed > 2) {
+                    throw new NumberFormatException("pas bien vilain maraud !");
+                } else {
+                    sliderZoom.setValue(speed);
+                    DeviceManager.setZoomScale(speed);
+                    DeviceManager.zoomAll();
+                }
+
+
+            }
+            catch(NumberFormatException e) {
+                speed = sliderZoom.getValue();
+                float speedFloat = (float) speed;
+                int speedInt = (int) (speedFloat*100);
+                float speedFloat2 = speedInt;
+                speedFloat2=speedFloat2/100;
+
+                zoomField.setText(Float.toString(speedFloat2));
+                DeviceManager.afficheError("Incorrect Value");
+
+            }
+
+
+        });
+
+        sliderZoom.setOnMouseReleased(event-> {
+            double speed = sliderZoom.getValue();
+            float speedFloat = (float) speed;
+            int speedInt = (int) (speedFloat*100);
+            float speedFloat2 = speedInt;
+            speedFloat2=speedFloat2/100;
+
+            zoomField.setText(Float.toString(speedFloat2));
+
+            DeviceManager.setZoomScale(speed);
+            DeviceManager.zoomAll();
+
+
+        });
+
+
+
+
+        pauseButton.setOnAction(event -> {
+            ArrayList<AbstractHardware> arrayList_Hardware = DeviceManager.getArray_list_of_devices();
+            for (AbstractHardware abstractHardWare : arrayList_Hardware) {
+                abstractHardWare.changeState(false);
+            }
+
+            DeviceManager.setIsPause(true);
+
+            playButton.setDisable(false);
+            pauseButton.setDisable(true);
+        });
+
+
         playButton.setOnAction(event -> {
+            ArrayList<AbstractHardware> arrayList_Hardware = DeviceManager.getArray_list_of_devices();
+
+            ArrayList<Integer> arrayList =DeviceManager.getArrayList_of_state();
+
+            int n = arrayList.size();
+
+            for(int i = 0; i<n;i++) {
+                if (arrayList.get(i).equals(1)) {
+                    arrayList_Hardware.get(i).changeState(true);
+                }
+
+            }
+
+            DeviceManager.setIsPause(false);
+
+            pauseButton.setDisable(false);
+            playButton.setDisable(true);
+        });
+
+
+
+
+
+
+        Button playDHCPButton = new Button();
+        playDHCPButton.setStyle("-fx-background-image: url('file:sprites/play.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+        playDHCPButton.setPrefWidth(20);
+        playDHCPButton.setPrefHeight(20);
+
+        playDHCPButton.setLayoutY(controlebar.getLayoutY()+1);
+
+        anchorPane.getChildren().add(playDHCPButton);
+
+        AnchorPane.setRightAnchor(playDHCPButton,0.0);
+        playDHCPButton.setOnAction(event -> {
             try {
                 DeviceManager.dhcpAll();
             } catch (OverflowException e) {
@@ -167,7 +368,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
                 e.printStackTrace();
             }
         });
-        playButton.toFront();
+        playDHCPButton.toFront();
 
 
 
@@ -221,11 +422,11 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
 
         delete.setOnAction(event -> {
-            DeviceManager.suprimodeactivate(status,content);
+            Supress.suprimodeactivate(status,content);
         });
 
         addlink.setOnAction(event -> {
-            DeviceManager.addlinkmodeactivate(status,content);
+            AddLink.addlinkmodeactivate(status,content);
         });
 
 
@@ -235,6 +436,8 @@ ActualizeThread actualizeThread = new ActualizeThread();
                 saveAndLoad.Save(primaryStage,anchorPane,saveButton);
             }
         });
+
+
 
         saveButton.setOnAction(event -> {
             if(!DeviceManager.is_bugging()) {
@@ -266,6 +469,10 @@ ActualizeThread actualizeThread = new ActualizeThread();
             actualizeThread.stop();
             DeviceManager.closeEvryConfigStage();
             DeviceManager.closeEvryRequestStage();
+            DeviceManager.closeEvryDHCPStage();
+            if(DeviceManager.verboseStage.isShowing()) {
+                DeviceManager.verboseStage.close();
+            }
 
             primaryStage.close();
         });
@@ -279,6 +486,10 @@ ActualizeThread actualizeThread = new ActualizeThread();
             actualizeThread.stop();
             DeviceManager.closeEvryConfigStage();
             DeviceManager.closeEvryRequestStage();
+            DeviceManager.closeEvryDHCPStage();
+            if(DeviceManager.verboseStage.isShowing()) {
+                DeviceManager.verboseStage.close();
+            }
             primaryStage.close();
         });
         savePane.getChildren().addAll(savetext,yessave,nosave);
@@ -437,7 +648,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
         toolBox.getChildren().add(serverButton);
         serverButton.setOnAction(event -> {
             try {
-                DeviceManager.device("server"+DeviceManager.getModeleserver(),anchorPane,scrollPane,content,status,primaryStage);
+                DeviceManager.device("server" +DeviceManager.getModeleserver(),anchorPane,scrollPane,content,status,primaryStage);
             } catch (BadCallException e) {
                 e.printStackTrace();
             }
@@ -483,14 +694,14 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         Button routerButton = new Button();
         routerButton.setLayoutX(10);
-        routerButton.setLayoutY(85);
+        routerButton.setLayoutY(140);
         routerButton.setPrefSize(50, 50);
         routerButton.setStyle("-fx-background-image: url('file:sprites/pack1/router2-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
         routerButton.toFront();
         toolBox.getChildren().add(routerButton);
         routerButton.setOnAction(event -> {
             try {
-                System.out.println(DeviceManager.getModelerouter());
+
                 DeviceManager.device("router"+DeviceManager.getModelerouter(),anchorPane,scrollPane,content,status,primaryStage);
             } catch (BadCallException e) {
                 e.printStackTrace();
@@ -505,6 +716,33 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         MenuItem typeswitch0= new MenuItem("Standard 24 Ports ETH ✓");
         contextMenuSwitch.getItems().add(typeswitch0);
+
+        MenuItem typeswitch1= new MenuItem("Avaya ERS2550T");
+        contextMenuSwitch.getItems().add(typeswitch1);
+
+        MenuItem typeswitch2= new MenuItem("Netgear M4100D12G");
+        contextMenuSwitch.getItems().add(typeswitch2);
+
+        typeswitch0.setOnAction(event->{
+            typeswitch0.setText("Standard 24 Ports ETH ✓");
+            typeswitch1.setText("Avaya ERS2550T");
+            typeswitch2.setText("Netgear M4100D12G");
+            DeviceManager.setModeleswitch(0);
+        });
+
+        typeswitch1.setOnAction(event->{
+            typeswitch0.setText("Standard 24 Ports ETH");
+            typeswitch1.setText("Avaya ERS2550T ✓");
+            typeswitch2.setText("Netgear M4100D12G");
+            DeviceManager.setModeleswitch(1);
+        });
+
+        typeswitch2.setOnAction(event->{
+            typeswitch0.setText("Standard 24 Ports ETH");
+            typeswitch1.setText("Avaya ERS2550T");
+            typeswitch2.setText("Netgear M4100D12G ✓");
+            DeviceManager.setModeleswitch(2);
+        });
 
         Button switchButton = new Button();
         switchButton.setLayoutX(70);
@@ -523,6 +761,75 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         switchButton.setContextMenu(contextMenuSwitch);
 
+
+        // Outil Hub
+        ContextMenu contextMenuHub = new ContextMenu();
+
+        MenuItem typehub0 = new MenuItem("Standard 24 Ports ETH ✓");
+        contextMenuHub.getItems().add(typehub0);
+
+        MenuItem typehub1 = new MenuItem("Link Builder 3Com");
+        contextMenuHub.getItems().add(typehub1);
+
+        MenuItem typehub2 = new MenuItem("CentreCom MR820TR");
+        contextMenuHub.getItems().add(typehub2);
+
+        typehub0.setOnAction(event->{
+            typehub0.setText("Standard 24 Ports ETH ✓");
+            typehub1.setText("Link Builder 3Com");
+            typehub2.setText("CentreCom MR820TR");
+            DeviceManager.setModelehub(0);
+        });
+
+        typehub1.setOnAction(event->{
+            typehub0.setText("Standard 24 Ports ETH");
+            typehub1.setText("Link Builder 3Com ✓");
+            typehub2.setText("CentreCom MR820TR");
+            DeviceManager.setModelehub(1);
+        });
+
+        typehub2.setOnAction(event->{
+            typehub0.setText("Standard 24 Ports ETH");
+            typehub1.setText("Link Builder 3Com");
+            typehub2.setText("CentreCom MR820TR ✓");
+            DeviceManager.setModelehub(2);
+        });
+
+        Button hubButton = new Button();
+        hubButton.setLayoutX(10);
+        hubButton.setLayoutY(85);
+        hubButton.setPrefSize(50,50);
+        hubButton.setStyle("-fx-background-image: url('file:sprites/pack1/hub-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+        hubButton.toFront();
+        toolBox.getChildren().add(hubButton);
+        hubButton.setOnAction(event -> {
+            try {
+                DeviceManager.device("hub"+DeviceManager.getModelehub(),anchorPane,scrollPane,content,status,primaryStage);
+            } catch (BadCallException e) {
+                e.printStackTrace();
+            }
+        });
+
+        hubButton.setContextMenu(contextMenuHub);
+
+        // Outil Port WAN
+        ContextMenu contextMenuWan = new ContextMenu();
+
+        Button wanButton = new Button();
+        wanButton.setLayoutX(70);
+        wanButton.setLayoutY(140);
+        wanButton.setPrefSize(50,50);
+        wanButton.setStyle("-fx-background-image: url('file:sprites/pack1/wan-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+        wanButton.toFront();
+        toolBox.getChildren().add(wanButton);
+        wanButton.setOnAction(event -> {
+            try {
+                DeviceManager.device("wan",anchorPane,scrollPane,content,status,primaryStage);
+            } catch (BadCallException e) {
+                e.printStackTrace();
+            }
+        });
+
         // Changer pack
 
 
@@ -532,6 +839,8 @@ ActualizeThread actualizeThread = new ActualizeThread();
             Image imageserver = new Image("file:sprites/pack1/server.png");
             Image imagerouter = new Image("file:sprites/pack1/router2.png");
             Image imageswitch = new Image("file:sprites/pack1/switch.png");
+            Image imagehub = new Image("file:sprites/pack1/hub.png");
+            Image imagewan = new Image("file:sprites/pack1/wan.png");
 
             DeviceManager.setpacktexture(1);
 
@@ -549,6 +858,12 @@ ActualizeThread actualizeThread = new ActualizeThread();
                 } else if(imageView.getAccessibleText().contains("switch")) {
                     imageView.setImage(imageswitch);
 
+                } else if(imageView.getAccessibleText().contains("hub")) {
+                    imageView.setImage(imagehub);
+
+                } else if(imageView.getAccessibleText().contains("wan")) {
+                    imageView.setImage(imagewan);
+
                 }
 
 
@@ -563,12 +878,14 @@ ActualizeThread actualizeThread = new ActualizeThread();
             routerButton.setStyle("-fx-background-image: url('file:sprites/pack1/router2-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
             serverButton.setStyle("-fx-background-image: url('file:sprites/pack1/server-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
             switchButton.setStyle("-fx-background-image: url('file:sprites/pack1/switch-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+            hubButton.setStyle("-fx-background-image: url('file:sprites/pack1/hub-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+            wanButton.setStyle("-fx-background-image: url('file:sprites/pack1/wan-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
 
             texture1.setText("Pack 1 ✓");
             texture2.setText("Pack 2");
 
-            DeviceManager.updateLinkDrag();
-            DeviceManager.updateInfoEtBarre();
+            Actualization.updateLinkDrag();
+            Actualization.updateInfoEtBarre();
         });
 
 
@@ -583,6 +900,8 @@ ActualizeThread actualizeThread = new ActualizeThread();
             Image imageserver = new Image("file:sprites/pack2/server.png");
             Image imagerouter = new Image("file:sprites/pack2/router2.png");
             Image imageswitch = new Image("file:sprites/pack2/switch.png");
+            Image imagehub = new Image("file:sprites/pack2/hub.png");
+            Image imagewan = new Image("file:sprites/pack2/wan.png");
 
             DeviceManager.setpacktexture(2);
 
@@ -600,6 +919,12 @@ ActualizeThread actualizeThread = new ActualizeThread();
                 } else if(imageView.getAccessibleText().contains("switch")) {
                     imageView.setImage(imageswitch);
 
+                } else if(imageView.getAccessibleText().contains("hub")) {
+                    imageView.setImage(imagehub);
+
+                } else if(imageView.getAccessibleText().contains("wan")) {
+                    imageView.setImage(imagewan);
+
                 }
 
 
@@ -614,12 +939,14 @@ ActualizeThread actualizeThread = new ActualizeThread();
             routerButton.setStyle("-fx-background-image: url('file:sprites/pack2/router2-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
             serverButton.setStyle("-fx-background-image: url('file:sprites/pack2/server-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
             switchButton.setStyle("-fx-background-image: url('file:sprites/pack2/switch-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+            hubButton.setStyle("-fx-background-image: url('file:sprites/pack2/hub-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
+            wanButton.setStyle("-fx-background-image: url('file:sprites/pack2/wan-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
 
             texture1.setText("Pack 1");
             texture2.setText("Pack 2 ✓");
 
-            DeviceManager.updateLinkDrag();
-            DeviceManager.updateInfoEtBarre();
+            Actualization.updateLinkDrag();
+            Actualization.updateInfoEtBarre();
         });
 
 
@@ -627,14 +954,14 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         Button rubberButton = new Button();
         rubberButton.setLayoutX(70);
-        rubberButton.setLayoutY(185);
+        rubberButton.setLayoutY(225);
         rubberButton.setPrefSize(50, 50);
         rubberButton.setStyle("-fx-background-image: url('file:sprites/gomme-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
         rubberButton.toFront();
         toolBox.getChildren().add(rubberButton);
         rubberButton.setOnAction(event -> {
             if(!DeviceManager.is_bugging()) {
-                DeviceManager.suprimodeactivate(status, content);
+                Supress.suprimodeactivate(status, content);
             }
         });
 
@@ -642,7 +969,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         Button crossButton = new Button();
         crossButton.setLayoutX(10);
-        crossButton.setLayoutY(185);
+        crossButton.setLayoutY(225);
         crossButton.setPrefSize(50, 50);
         crossButton.setStyle("-fx-background-image: url('file:sprites/cross-icon-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
         crossButton.toFront();
@@ -657,14 +984,14 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         Button linkButton = new Button();
         linkButton.setLayoutX(10);
-        linkButton.setLayoutY(245);
+        linkButton.setLayoutY(285);
         linkButton.setPrefSize(50, 50);
         linkButton.setStyle("-fx-background-image: url('file:sprites/link-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
         linkButton.toFront();
         toolBox.getChildren().add(linkButton);
         linkButton.setOnAction(event -> {
             if(!DeviceManager.is_bugging()) {
-                DeviceManager.addlinkmodeactivate(status, content);
+                AddLink.addlinkmodeactivate(status, content);
             }
         });
 
@@ -672,14 +999,14 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
         Button multiplelinkButton = new Button();
         multiplelinkButton.setLayoutX(70);
-        multiplelinkButton.setLayoutY(245);
+        multiplelinkButton.setLayoutY(285);
         multiplelinkButton.setPrefSize(50, 50);
         multiplelinkButton.setStyle("-fx-background-image: url('file:sprites/multiple-link-mini.png');-fx-background-repeat: no-repeat;-fx-background-position: center;");
         multiplelinkButton.toFront();
         toolBox.getChildren().add(multiplelinkButton);
         multiplelinkButton.setOnAction(event -> {
             if(!DeviceManager.is_bugging()) {
-                DeviceManager.addlinkmodeactivate(status, content);
+                AddLink.addlinkmodeactivate(status, content);
                 DeviceManager.setAddlinkmode(7);
                 status.setText("addLink 6");
             }
@@ -735,7 +1062,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
                     restoreView.setX(toolBox.getPrefWidth() - restore.getWidth() - exit.getWidth() - 2);
                     anchorPane.getChildren().add(toolBox);
                 } else {
-                    System.out.println("Let's go Outside");
+
                     toolBox.setLayoutY(0);
                     toolBox.setLayoutX(0);
                     toolBox.setPrefSize(129, 350);
@@ -815,9 +1142,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
                 } else {
                     anchorPane.getChildren().add(exitPane);
                 }
-                if(DeviceManager.verboseStage.isShowing()) {
-                    DeviceManager.verboseStage.close();
-                }
+
             }
 
 
@@ -834,7 +1159,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
 
                 if ((x < 0 - 200 || y <= scrollPane.getLayoutY() - 200 || x + toolBox.getWidth() + 16 >= anchorPane.getWidth() + 200 || y + toolBox.getHeight() + 16 >= anchorPane.getHeight() + 200) && anchorPane.getChildren().contains(toolBox)) {
-                    System.out.println("Let's go Outside");
+
                     toolBox.setLayoutY(0);
                     toolBox.setLayoutX(0);
                     toolBox.setPrefSize(129, 350);
@@ -883,24 +1208,7 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
             }
         });
-        //Fonction du bouton TEST
-        testButton.setOnAction(event -> {
 
-
-            try {
-                DeviceManager.updateLink();
-            } catch (BadCallException e) {
-                e.printStackTrace();
-            }
-            /*
-            if(!DeviceManager.verboseStage.isShowing()) {
-                DeviceManager.verboseStage.show();
-            } else {
-                DeviceManager.addLineVerbose("Bite");
-            }
-            */
-
-        });
 
 
 
@@ -927,8 +1235,21 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
 
 
+        //TEST bouton
+        MenuItem testbutt = new MenuItem("TEST");
+
+        testbutt.setOnAction(event -> DeviceManager.verboseStage.show());
+
+        filemenu.getItems().add(testbutt);
+
+
+
+
         DeviceManager.initErrorStage();
-        //DeviceManager.initVerboseStage();
+      //  DeviceManager.initVerboseStage();
+
+
+
 
 
         //---------------------------------------------------
@@ -952,9 +1273,8 @@ ActualizeThread actualizeThread = new ActualizeThread();
 
 
 
-
-
-
+        Chat chat = new Chat();
+        chat.Lapin(primaryStage,anchorPane,filemenu);
         //On démarre le Thread d'actualisation
         actualizeThread.start();
 

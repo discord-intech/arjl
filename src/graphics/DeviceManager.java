@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package graphics;
 
 import actions.Actions;
@@ -10,8 +32,10 @@ import hardware.AbstractHardware;
 import hardware.Link;
 import hardware.client.AbstractClient;
 import hardware.router.AbstractRouter;
+import hardware.router.WANPort;
 import hardware.server.AbstractServer;
 import hardware.switchs.AbstractSwitch;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Side;
@@ -25,7 +49,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelFormat;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -48,6 +71,120 @@ import java.util.Objects;
  * Classe de méthodes d'ajout et de gestion d'appareils (bourrée de lambdas)
  */
 public class DeviceManager {
+
+    /**
+     * Variable pour le port Wan
+     */
+    private static int WAN = 0;
+    public static int getWAN() {
+        return WAN;
+    }
+
+    public static void setWAN(int WAN_in) {
+        WAN=WAN_in;
+    }
+
+
+
+    /**
+     * Variable pour le zoom
+     */
+    private static double zoomScale = 1;
+    public static double getZoomScale() {
+        return zoomScale;
+    }
+    public static void setZoomScale(double zoomin) {
+        zoomScale=zoomin;
+    }
+    private static Slider zoomSlider;
+    public static void setZoomSlider(Slider sliderIn) {
+        zoomSlider=sliderIn;
+    }
+
+
+    private static TextField zoomField;
+    public static void setZoomField(TextField fieldIn) {
+        zoomField=fieldIn;
+    }
+
+    public static void resetzoomScale() {
+        zoomScale=1;
+        zoomSlider.setValue(1);
+        zoomField.setText("1");
+    }
+
+    public static boolean graphic = false;
+
+
+    /**
+     * Thread actuelle
+     * */
+
+    public static Thread mainThread = null;
+
+    /***
+     * Pour la on off ité
+     */
+
+    private static boolean isPaused = true;
+    public static boolean getIsPause() {
+        return isPaused;
+    }
+    public static void setIsPause(boolean boo) {
+        isPaused=boo;
+    }
+
+
+    /**
+     * Liste des images errors
+     */
+    private static ArrayList<ImageView> arrayList_of_error = new ArrayList<>();
+    public static ArrayList<ImageView> getArrayList_of_error () {
+        return arrayList_of_error;
+    }
+    public static void setArrayList_of_error(ArrayList<ImageView> arrayList_of_error_in) {
+        arrayList_of_error=arrayList_of_error_in;
+    }
+
+    /**
+     * Liste pour les triangles d'erreur
+     */
+    private static ArrayList<Integer> arrayListOfStateError = new ArrayList<>();
+    public static ArrayList<Integer> getArrayListOfStateError() {return arrayListOfStateError;}
+    public static void setArrayListOfStateError(ArrayList<Integer> arrayListOfStateErrorIn) {
+        arrayListOfStateError=arrayListOfStateErrorIn;
+    }
+
+    /**
+     * Liste des positions absolues
+     */
+    private static ArrayList<Double> arrayListOfX = new ArrayList<>();
+    public static ArrayList<Double> getArrayListOfX() {
+        return arrayListOfX;
+    }
+    public static void setArrayListOfX(ArrayList<Double> arrayIn) {
+        arrayListOfX=arrayIn;
+    }
+
+    private static ArrayList<Double> arrayListOfY = new ArrayList<>();
+    public static ArrayList<Double> getArrayListOfY() {
+        return arrayListOfY;
+    }
+    public static void setArrayListOfY(ArrayList<Double> arrayIn) {
+        arrayListOfY=arrayIn;
+    }
+
+    /**
+     * Liste des états
+     */
+
+    private static ArrayList<Integer> arrayList_of_state= new ArrayList<Integer>();
+    public static ArrayList<Integer> getArrayList_of_state()  {
+        return arrayList_of_state;
+    }
+    public static void setArrayList_of_state(ArrayList<Integer> arrayList) {
+        arrayList_of_state=arrayList;
+    }
 
     /***
      *  Pour le message d'erreur
@@ -151,15 +288,22 @@ public class DeviceManager {
 
     }
 
-    public synchronized static void addLineVerbose(String str) {
+    public static void addLineVerbose(String str) throws InterruptedException {
+        synchronized(mainThread) {
+
+            ;
+
+            String text = verboseText.getText();
+
+            text = str + "\n" + text;
+            String finalText = text;
+            Platform.runLater(() -> verboseText.setText(finalText));
 
 
-        String text = verboseText.getText();
 
-        text = str +"\n" + text;
-        verboseText.setText(text);
+            //verbosePane.setVvalue(1);
 
-        //verbosePane.setVvalue(1);
+        }
 
 
 
@@ -310,8 +454,23 @@ public class DeviceManager {
         }
     }
 
-
-
+    /**
+     * Liste des DHCPStage
+     */
+    private static ArrayList<Stage> arrayList_of_stageDHCP = new ArrayList<>();
+    public static ArrayList <Stage> getarrayList_of_stageDHCP() {
+        return arrayList_of_stageDHCP;
+    }
+    public static void setarrayList_of_stageDHCP(ArrayList <Stage> arrayList_of_stageDHCP_in) {
+        arrayList_of_stageDHCP=arrayList_of_stageDHCP_in;
+    }
+    public static void closeEvryDHCPStage() {
+        for (Stage stage:arrayList_of_stageDHCP) {
+            if(stage.isShowing()) {
+                stage.close();
+            }
+        }
+    }
 
 
     /**
@@ -374,6 +533,14 @@ public class DeviceManager {
         return modeleswitch;
     }
 
+    private static int modelehub = 0;
+    public static void setModelehub(int a) {
+        modelehub=a;
+    }
+    public static int getModelehub() {
+        return modelehub;
+    }
+
 
     /**
      * Les différentes images utilisées
@@ -382,40 +549,38 @@ public class DeviceManager {
     private static Image imageserver = new Image("file:sprites/pack1/server.png");
     private static Image imagerouteur = new Image("file:sprites/pack1/router2.png");
     private static Image imageswitch = new Image("file:sprites/pack1/switch.png");
+    private static Image imagehub = new Image("file:sprites/pack1/hub.png");
+    private static Image imagewan = new Image("file:sprites/pack1/wan.png");
     private static Image imageerror = new Image("file:sprites/Error.png");
 
     private static Image imagepcselected = new Image("file:sprites/pack1/pc-selected.png");
     private static Image imageserverselected = new Image("file:sprites/pack1/server-selected.png");
     private static Image imagerouteurselected = new Image("file:sprites/pack1/router2-selected.png");
     private static Image imageswitchselected = new Image("file:sprites/pack1/switch-selected.png");
+    private static Image imagehubselected = new Image("file:sprites/pack1/hub-selected.png");
+    private static Image imagewanselected = new Image("file:sprites/pack1/wan-selected.png");
 
 
 
     public static void setpacktexture(int i) {
-        if(i==1) {
-            imagepc = new Image("file:sprites/pack1/pc.png");
-            imageserver = new Image("file:sprites/pack1/server.png");
-            imagerouteur = new Image("file:sprites/pack1/router2.png");
-            imageswitch = new Image("file:sprites/pack1/switch.png");
-            imagepcselected = new Image("file:sprites/pack1/pc-selected.png");
-            imageserverselected = new Image("file:sprites/pack1/server-selected.png");
-            imagerouteurselected = new Image("file:sprites/pack1/router2-selected.png");
-            imageswitchselected = new Image("file:sprites/pack1/switch-selected.png");
+
+            String path = "file:sprites/pack" + i;
+            imagepc = new Image(path+"/pc.png");
+            imageserver = new Image(path+"/server.png");
+            imagerouteur = new Image(path+"/router2.png");
+            imageswitch = new Image(path+"/switch.png");
+            imagehub = new Image(path+"/hub.png");
+            imagewan = new Image(path+"/wan.png");
+
+            imagepcselected = new Image(path+"/pc-selected.png");
+            imageserverselected = new Image(path+"/server-selected.png");
+            imagerouteurselected = new Image(path+"/router2-selected.png");
+            imageswitchselected = new Image(path+"/switch-selected.png");
+            imagehubselected = new Image(path+"/hub-selected.png");
+            imagewanselected = new Image(path+"/wan-selected.png");
 
 
-        }
-        if(i==2) {
-            imagepc = new Image("file:sprites/pack2/pc.png");
-            imageserver = new Image("file:sprites/pack2/server.png");
-            imagerouteur = new Image("file:sprites/pack2/router2.png");
-            imageswitch = new Image("file:sprites/pack2/switch.png");
-            imagepcselected = new Image("file:sprites/pack2/pc-selected.png");
-            imageserverselected = new Image("file:sprites/pack2/server-selected.png");
-            imagerouteurselected = new Image("file:sprites/pack2/router2-selected.png");
-            imageswitchselected = new Image("file:sprites/pack2/switch-selected.png");
 
-
-        }
 
 
     }
@@ -478,6 +643,12 @@ public class DeviceManager {
      * Booleen indiquant si on est en mode DELETE
      */
     private static boolean supressmode = false;
+    public static boolean getsupressmode () {
+        return supressmode;
+    }
+    public static void setsupressmode (boolean supressmode_in) {
+        supressmode=supressmode_in;
+    }
 
     /**
      * Entier indiquant si on est en mode création de liens.
@@ -572,6 +743,10 @@ public class DeviceManager {
                     imageView.setImage(imageserver);
                 } else if (str.contains("router")) {
                     imageView.setImage(imagerouteur);
+                } else if (str.contains("hub")) {
+                    imageView.setImage(imagehub);
+                } else if (str.contains("wan")) {
+                    imageView.setImage(imagewan);
                 }
 
             });
@@ -599,421 +774,19 @@ public class DeviceManager {
                 firstimageView.setImage(imagerouteur);
             } else if (firstimageView.getAccessibleText().equals("switch")){
                 firstimageView.setImage(imageswitch);
+            } else if (firstimageView.getAccessibleText().equals("hub")){
+                firstimageView.setImage(imagehub);
+            } else if (firstimageView.getAccessibleText().equals("wan")){
+                firstimageView.setImage(imagewan);
             }
         }
 
-        updateInfoEtBarre();
-        updateLinkDrag();
+        Actualization.updateInfoEtBarre();
+        Actualization.updateLinkDrag();
 
     }
 
 
-    /**
-     * Suppression d'une image
-     * @param imageView
-     * @param anchorPane
-     * @throws exceptions.BadCallException
-     */
-    public static synchronized void suprimerImage (ImageView imageView,AnchorPane anchorPane) throws exceptions.BadCallException {
-        if(!bugmode) {
-            int index = array_list_of_image.indexOf(imageView);
-
-            System.out.println("Hard Links :" + array_list_of_links_hard.size());
-            System.out.println("Images links :" + array_list_of_link.size());
-
-
-            ArrayList<ElementOfLink> list_element = new ArrayList<>();
-
-            int n = array_list_of_link.size();
-            ArrayList<Integer> array_list_of_index = new ArrayList();
-            for (int i = 0; i < n; ++i) {
-
-                ElementOfLink element = array_list_of_link.get(i);
-                if (element.img1 == imageView) {
-                    array_list_of_index.add(i);
-                    list_element.add(element);
-                }
-                if (element.img2 == imageView) {
-                    array_list_of_index.add(i);
-                    list_element.add(element);
-                }
-
-            }
-
-            System.out.println("Array list Index : " + array_list_of_index.toString());
-            System.out.println("Hard Links :" + array_list_of_links_hard.size());
-            System.out.println("Images links :" + array_list_of_link.size());
-
-            //System.out.println("maman d'aymeric" + array_list_of_index.size());
-
-
-            for (int i = array_list_of_index.size() - 1; i >= 0; i--) {
-
-                System.out.println(i);
-                Actions.disconnect(array_list_of_links_hard.get(array_list_of_index.get(i).intValue()));
-                System.out.println(array_list_of_links_hard.remove(array_list_of_index.get(i).intValue()));
-            }
-            System.out.println("Hard Links :" + array_list_of_links_hard.size());
-            System.out.println("Images links :" + array_list_of_link.size());
-
-
-            array_list_of_devices.get(index).stop();
-            System.out.println(array_list_of_devices.remove(index));
-            array_list_of_image.remove(index);
-            anchorPane.getChildren().remove(imageView);
-            anchorPane.getChildren().remove(arrayList_of_infoMenu.get(index));
-            arrayList_of_infoMenu.remove(index);
-            anchorPane.getChildren().remove(arrayList_of_progressBar.get(index));
-            arrayList_of_progressBar.remove(index);
-            anchorPane.getChildren().remove(arrayList_of_progressBarRequest.get(index));
-            arrayList_of_progressBarRequest.remove(index);
-            arrayList_of_configStage.get(index).close();
-            arrayList_of_configStage.remove(index);
-
-            n = list_element.size();
-            for (int i = 0; i < n; ++i) {
-
-                ElementOfLink element = list_element.get(i);
-                anchorPane.getChildren().remove(element.line);
-                array_list_of_link.remove(element);
-            }
-
-            System.out.println("Hard Links :" + array_list_of_links_hard.size());
-            System.out.println("Images links :" + array_list_of_link.size());
-            updateInfoMenu();
-        }
-    }
-
-
-
-    /**
-     * Suppression d'un lien
-     * @param line
-     * @param anchorPane
-     * @param status
-     * @throws exceptions.BadCallException
-     */
-    public static void suprimerLien (Line line,AnchorPane anchorPane,Label status) throws exceptions.BadCallException {
-
-        if(!bugmode) {
-            anchorPane.getChildren().remove(line);
-
-
-            ElementOfLink element_supr = null;
-
-            int n = array_list_of_link.size();
-            for (int i = 0; i < n; ++i) {
-                ElementOfLink element = array_list_of_link.get(i);
-                if (element.line == line) {
-                    element_supr = element;
-                }
-
-            }
-            int index = array_list_of_link.indexOf(element_supr);
-
-            Actions.disconnect(array_list_of_links_hard.get(index));
-
-            System.out.println(array_list_of_link.remove(index));
-            System.out.println(array_list_of_links_hard.remove(index));
-
-            System.out.println("Hard Links : " + array_list_of_links_hard.size());
-            System.out.println("Images links : " + array_list_of_link.size());
-            updateInfoMenu();
-        }
-    }
-
-
-
-    /**
-     * Ajout d'un lien
-     * @param content
-     * @param status
-     * @param anchorPane
-     * @throws exceptions.BadCallException
-     */
-    public static void addlink (AnchorPane content,Label status,AnchorPane anchorPane) throws exceptions.BadCallException {
-        if(!bugmode) {
-            Line line = new Line();
-
-            line.setStartX(firstimageView.getX() + firstimagesizeX / 2);
-            line.setStartY(firstimageView.getY() + firstimagesizeY / 2);
-            line.setEndX(secondimageView.getX() + secondimagesizeX / 2);
-            line.setEndY(secondimageView.getY() + secondimagesizeY / 2);
-
-            line.setOnMouseClicked(event -> {
-                if (supressmode) {
-                    try {
-                        suprimerLien(line, content, status);
-                    } catch (BadCallException e) {
-                        reset("", status, content);
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-
-            try {
-                int index1 = array_list_of_image.indexOf(firstimageView);
-                int index2 = array_list_of_image.indexOf(secondimageView);
-
-                if (!loadmode) {
-                    array_list_of_links_hard.add(Actions.connect(array_list_of_devices.get(index1), array_list_of_devices.get(index2), LinkTypes.ETH));
-                }
-                line.setStrokeWidth(4);
-                line.setStroke(Color.web("000000"));
-                content.getChildren().add(line);
-                line.toBack();
-
-
-                array_list_of_link.add(new ElementOfLink(firstimageView, secondimageView, line));
-
-
-                if (!loadmode) {
-                    System.out.println(array_list_of_links_hard.get(array_list_of_links_hard.size() - 1).getType());
-                    System.out.println(array_list_of_links_hard.get(array_list_of_links_hard.size() - 1).getHardwareConnected());
-                }
-                addlinkmode = 1;
-                status.setText("addLink");
-                updateInfoMenu();
-            } catch (BadCallException e) {
-                reset("", status, content);
-                afficheError("Impossible to create link between this two devices");
-            }
-            if (!loadmode) {
-                System.out.println("Hard Links :" + array_list_of_links_hard.size());
-                System.out.println("Images links :" + array_list_of_link.size());
-            }
-        }
-    }
-
-
-
-    /**
-     * Passer en mode DELETE
-     * @param status
-     * @param content
-     */
-    public static void suprimodeactivate (Label status,AnchorPane content) {
-        if(!bugmode) {
-            if (supressmode) {
-                reset("", status, content);
-            } else {
-
-                status.setText("DELETE");
-                supressmode = true;
-                reset("delete", status, content);
-            }
-        }
-    }
-
-
-
-    /**
-     * Passer en mode création de liens
-     * @param status
-     * @param content
-     */
-    public static void addlinkmodeactivate (Label status,AnchorPane content) {
-        if(!bugmode) {
-            if (addlinkmode != 0) {
-                reset("", status, content);
-            } else {
-                status.setText("addLink");
-                addlinkmode = 1;
-                reset("addlink", status, content);
-            }
-        }
-    }
-
-
-
-    /**
-     * On update les liens liés à une image pour le drag ans drop
-     * @param imageView
-     */
-    public static void updateLinkDrag(ImageView imageView) {
-        if(!bugmode) {
-            int n = array_list_of_link.size();
-            double imagex=imageView.getImage().getWidth();
-            double imagey=imageView.getImage().getHeight();
-            for (int i = 0; i < n; ++i) {
-                ElementOfLink element = array_list_of_link.get(i);
-                if (element.img1 == imageView) {
-                    element.line.setStartX(imageView.getX() + imagex / 2);
-                    element.line.setStartY(imageView.getY() + imagey / 2);
-                }
-                if (element.img2 == imageView) {
-                    element.line.setEndX(imageView.getX() + imagex / 2);
-                    element.line.setEndY(imageView.getY() + imagey / 2);
-                }
-            }
-
-        }
-
-    }
-
-    /**
-     * On update tous les liens pour le drag and drop
-     */
-    public static void updateLinkDrag() {
-
-        if(!bugmode) {
-            array_list_of_link.forEach(ElementOfLink -> {
-
-                ImageView image1 = ElementOfLink.img1;
-                ImageView image2 = ElementOfLink.img2;
-                double image1x=image1.getImage().getWidth();
-                double image1y=image1.getImage().getHeight();
-                ElementOfLink.line.setStartX(image1.getX() + image1x / 2);
-                ElementOfLink.line.setStartY(image1.getY() + image1y / 2);
-
-                double image2x=image2.getImage().getWidth();
-                double image2y=image2.getImage().getHeight();
-                ElementOfLink.line.setEndX(image2.getX() + image2x / 2);
-                ElementOfLink.line.setEndY(image2.getY() + image2y / 2);
-
-
-            });
-        }
-    }
-
-
-
-
-
-    /**
-     * On update les liens
-     * @throws BadCallException
-     */
-    public static void updateLink() throws BadCallException {
-
-
-        int[] linkStats=actions.Actions.linkStats(array_list_of_links_hard);
-
-        int n = linkStats.length;
-        for(int i = 0; i<n;i++) {
-
-
-            ElementOfLink elementOfLink = array_list_of_link.get(i);
-
-            int ratio = linkStats[i];
-
-            
-            int red = 255*(ratio/100);
-            int green = 255*(1-ratio/100);
-
-            elementOfLink.line.setStroke(Color.rgb(red,green,0));
-
-        }
-    }
-
-
-    /**
-     * On actualise le trafic dans les progressBars
-     */
-    public static void updateprogressBar() {
-        if(!loadmode) {
-            int[] progressionList = Actions.hardwareStats(array_list_of_devices);
-
-            for (int i = 0; i < progressionList.length; i++) {
-                if(array_list_of_image.get(i).getAccessibleText().contains("pc")) {
-                    AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(i);
-                    arrayList_of_progressBarRequest.get(i).setProgress((float) abstractClient.progress() / 100);
-                }
-
-                arrayList_of_progressBar.get(i).setProgress((float) progressionList[i] / 100);
-
-            }
-
-
-        }
-
-    }
-
-
-    /**
-     * On update les menus de info et barre de progression si on change de pack de texture
-     */
-    public static void updateInfoEtBarre() {
-
-        int n = arrayList_of_infoMenu.size();
-        for (int i = 0;i<n;i++) {
-            arrayList_of_infoMenu.get(i).setLayoutX(array_list_of_image.get(i).getX() + array_list_of_image.get(i).getImage().getWidth());
-            arrayList_of_infoMenu.get(i).setLayoutY(array_list_of_image.get(i).getY());
-        }
-
-
-
-        int m = arrayList_of_progressBar.size();
-        for (int i = 0;i<m;i++) {
-            arrayList_of_progressBar.get(i).setLayoutX(array_list_of_image.get(i).getX());
-            arrayList_of_progressBar.get(i).setLayoutY(array_list_of_image.get(i).getY() + array_list_of_image.get(i).getImage().getHeight());
-            arrayList_of_progressBar.get(i).setPrefWidth(array_list_of_image.get(i).getImage().getWidth());
-            arrayList_of_progressBar.get(i).setPrefHeight(1);
-
-            arrayList_of_progressBarRequest.get(i).setLayoutX(array_list_of_image.get(i).getX());
-            arrayList_of_progressBarRequest.get(i).setLayoutY(array_list_of_image.get(i).getY() - 13);
-            arrayList_of_progressBarRequest.get(i).setPrefWidth(array_list_of_image.get(i).getImage().getWidth());
-            arrayList_of_progressBarRequest.get(i).setPrefHeight(1);
-
-
-
-        }
-
-
-
-
-    }
-
-
-    /**
-     * On update les menus de info
-     */
-    public static void updateInfoMenu() {
-
-
-        arrayList_of_infoMenu.forEach(infoAnchorPane -> {
-
-
-            ObservableList<Node> list_of_machin = infoAnchorPane.getChildren();
-            Text t0 = new Text();
-            t0 = (Text) list_of_machin.get(0);
-
-
-            if (!t0.getText().equals("Device = Error")) {
-                //On update la info d'un PC
-
-
-
-                Text t1 = (Text) list_of_machin.get(1);
-
-
-
-                if (array_list_of_devices.get(arrayList_of_infoMenu.indexOf(infoAnchorPane)).isRunning()) {
-                    t1.setText("Power : " + "ON");
-                } else {
-                    t1.setText("Power : " + "OFF");
-                }
-
-                Text t2 = (Text) list_of_machin.get(2);
-
-
-
-
-
-
-                t2.setText("Free ports : " + array_list_of_devices.get(arrayList_of_infoMenu.indexOf(infoAnchorPane)).getFreePorts().size());
-            }
-
-
-
-
-        });
-
-
-
-
-    }
 
 
     /**
@@ -1061,138 +834,6 @@ public class DeviceManager {
 
 
 
-    /**
-     * On convertit les ImageView pour la sauvegarde
-     * @return
-     */
-    public static ArrayList<ImageToSave> converterImageView() {
-        ArrayList <ImageToSave > array_list_of_imageconverted = new ArrayList<>();
-
-
-        array_list_of_image.forEach(imageView -> {
-            ImageToSave imageToSave = new ImageToSave(imageView);
-            array_list_of_imageconverted.add(imageToSave);
-
-        });
-
-        System.out.println(array_list_of_imageconverted);
-
-
-        return array_list_of_imageconverted;
-
-
-
-
-    }
-
-
-    /**
-     * On recrée les ImageView depuis la sauvegarde
-     * @param array_list_of_imageconverted
-     * @param anchorPane
-     * @param scrollPane
-     * @param content
-     * @param status
-     */
-    public static void loadImageView(ArrayList<Object> array_list_of_imageconverted, AnchorPane anchorPane,  ScrollPane scrollPane, AnchorPane content, Label status,Stage primaryStage){
-
-
-
-        int n = array_list_of_imageconverted.size();
-        for(int i=0;i<n;i++) {
-            ImageToSave imageToSave = (ImageToSave) array_list_of_imageconverted.get(i);
-            String type = imageToSave.type;
-            double x = imageToSave.x;
-            double y = imageToSave.y;
-            try {
-                device(type,anchorPane,scrollPane,content,status,primaryStage);
-            } catch (BadCallException e) {
-                e.printStackTrace();
-            }
-            ImageView imageView = array_list_of_image.get(i);
-            imageView.setX(x);
-            imageView.setY(y);
-
-            if(imageToSave.progressBarIsShowing) {
-
-                content.getChildren().add(arrayList_of_progressBar.get(i));
-            }
-            if(imageToSave.requestBarIsShowing) {
-                content.getChildren().add(arrayList_of_progressBarRequest.get(i));
-            }
-        }
-
-
-
-    }
-
-
-
-
-
-    /**
-     * On convertit les liens pour la sauvegarde
-     * @return
-     */
-    public static ArrayList<LinkToSave> converterLink() {
-        ArrayList <LinkToSave > array_list_of_linkconverted = new ArrayList<>();
-
-
-        array_list_of_link.forEach(Element_of_Link-> {
-            LinkToSave linkToSave = new LinkToSave(Element_of_Link);
-            array_list_of_linkconverted.add(linkToSave);
-
-        });
-
-        System.out.println(array_list_of_linkconverted);
-
-
-        return array_list_of_linkconverted;
-    }
-
-
-    /**
-     * On recrée les liens depuis la sauvegarde
-     * @param array_list_of_linkconverted
-     * @param anchorPane
-     * @param content
-     * @param status
-     */
-    public static void loadLink (ArrayList<Object> array_list_of_linkconverted, AnchorPane anchorPane,  AnchorPane content, Label status) {
-
-
-        int n = array_list_of_linkconverted.size();
-        addlinkmode=1;
-        for(int i=0;i<n;i++) {
-
-            LinkToSave linkToSave = (LinkToSave) array_list_of_linkconverted.get(i);
-            int indexImage1=linkToSave.indexImage1;
-            int indexImage2=linkToSave.indexImage2;
-
-            firstimageView=array_list_of_image.get(indexImage1);
-            Image image1=firstimageView.getImage();
-            firstimagesizeX=image1.getWidth();
-            firstimagesizeY=image1.getHeight();
-            secondimageView=array_list_of_image.get(indexImage2);
-            Image image2=secondimageView.getImage();
-            secondimagesizeX=image2.getWidth();
-            secondimagesizeY=image2.getHeight();
-
-
-
-            try {
-                addlink(content,status,anchorPane);
-            } catch (BadCallException e) {
-                e.printStackTrace();
-            }
-
-        }
-        reset("",status,content);
-
-
-
-
-    }
 
 
     /**
@@ -1213,667 +854,29 @@ public class DeviceManager {
     }
 
 
+
+
+
     /**
-     * Fonction qui initialise et actualise les menus de confique
+     * Fonction du zoom
      */
 
-    public static void updateConfigMenuPc (Stage configStage,AnchorPane configPane,ArrayList<Object> actualiseGraph,AbstractClient abstractClient) throws BadCallException {
+    public static void zoomAll() {
 
-
-
-        int n = actualiseGraph.size();
+        int n = array_list_of_image.size();
 
         for(int i = 0;i<n;i++) {
-            configPane.getChildren().remove(actualiseGraph.get(i));
+            ImageView imageView = array_list_of_image.get(i);
+            imageView.setX(arrayListOfX.get(i)*zoomScale);
+            imageView.setY(arrayListOfY.get(i)*zoomScale);
+            imageView.setScaleX(zoomScale);
+            imageView.setScaleY(zoomScale);
+
         }
 
-        actualiseGraph.clear();
-
-
-
-        TextField textFieldsurname = new TextField(abstractClient.nickname);
-        textFieldsurname.setLayoutY(0);
-        textFieldsurname.setLayoutX(200);
-        textFieldsurname.setPrefWidth(100);
-        configPane.getChildren().add(textFieldsurname);
-        actualiseGraph.add(textFieldsurname);
-
-        Button surnameButton = new Button ("OK");
-        surnameButton.setLayoutX(300);
-        surnameButton.setLayoutY(0);
-        configPane.getChildren().add(surnameButton);
-        actualiseGraph.add(surnameButton);
-
-        surnameButton.setOnAction(event -> {
-            String surname=textFieldsurname.getText();
-            abstractClient.nickname=surname;
-            configStage.setTitle(surname);
-        });
-
-        Text iptext = new Text("IP : ");
-        iptext.setLayoutX(5);
-        iptext.setLayoutY(45);
-        configPane.getChildren().add(iptext);
-        actualiseGraph.add(iptext);
-        TextField textField = null;
-        try {
-            textField = new TextField(abstractClient.getInterfaceIP(0).toString());
-        } catch (BadCallException e) {
-            afficheError("Error 23");
-        }
-        configPane.getChildren().add(textField);
-        actualiseGraph.add(textField);
-        textField.setLayoutX(5);
-        textField.setLayoutY(60);
-
-        Button validationButton = new Button("OK");
-        validationButton.setLayoutY(60);
-        validationButton.setLayoutX(200);
-        final TextField finalTextField = textField;
-        validationButton.setOnAction(event ->{
-            if(!bugmode) {
-                String string = finalTextField.getText();
-
-                Boolean isAnIp = true;
-
-                IP Ip = null;
-
-                try {
-                    Ip = IP.stringToIP(string);
-                } catch (BadCallException e) {
-                    afficheError("Wrong Argument : Not an IP");
-                    try {
-                        finalTextField.setText(abstractClient.getInterfaceIP(0).toString());
-                    } catch (BadCallException e1) {
-                        e1.printStackTrace();
-                    }
-                    isAnIp = false;
-                }
-
-                if (isAnIp) {
-                    abstractClient.configureIP(0, Ip);
-                }
-
-
-            }
-        });
-
-        configPane.getChildren().add(validationButton);
-        actualiseGraph.add(validationButton);
-
-        Text gatewaytext = new Text("gateway : ");
-        gatewaytext.setLayoutX(5);
-        gatewaytext.setLayoutY(105);
-        configPane.getChildren().add(gatewaytext);
-        actualiseGraph.add(gatewaytext);
-        TextField textFieldgateway = null;
-
-        textFieldgateway = new TextField(abstractClient.getGateway().toString());
-
-        configPane.getChildren().add(textFieldgateway);
-        actualiseGraph.add(textFieldgateway);
-        textFieldgateway.setLayoutX(5);
-        textFieldgateway.setLayoutY(120);
-
-        Button validationButtongateway = new Button("OK");
-        validationButtongateway.setLayoutY(120);
-        validationButtongateway.setLayoutX(200);
-        final TextField finalTextFieldgateway = textFieldgateway;
-        validationButtongateway.setOnAction(event ->{
-            if(!bugmode) {
-                String string = finalTextFieldgateway.getText();
-
-                Boolean isAnIp = true;
-
-                IP Ip = null;
-
-                try {
-                    Ip = IP.stringToIP(string);
-                } catch (BadCallException e) {
-                    afficheError("Wrong Argument : Not an IP");
-
-                        finalTextFieldgateway.setText(abstractClient.getGateway().toString());
-
-                    isAnIp = false;
-                }
-
-                if (isAnIp) {
-                    abstractClient.configureGateway(Ip);
-                }
-
-
-            }
-        });
-
-        configPane.getChildren().add(validationButtongateway);
-        actualiseGraph.add(validationButtongateway);
-
-
-
-
+        Actualization.updateLinkDrag();
     }
 
-    public static void updateConfigMenuServer (Stage configStage,AnchorPane configPane,ArrayList<Object> actualiseGraph,AbstractServer abstractServer) throws BadCallException {
-
-
-        int n = actualiseGraph.size();
-
-        for(int i = 0;i<n;i++) {
-            configPane.getChildren().remove(actualiseGraph.get(i));
-        }
-
-        actualiseGraph.clear();
-
-
-        TextField textFieldsurname = new TextField(abstractServer.nickname);
-        textFieldsurname.setLayoutY(0);
-        textFieldsurname.setLayoutX(200);
-        textFieldsurname.setPrefWidth(100);
-        configPane.getChildren().add(textFieldsurname);
-        actualiseGraph.add(textFieldsurname);
-
-        Button surnameButton = new Button ("OK");
-        surnameButton.setLayoutX(300);
-        surnameButton.setLayoutY(0);
-        configPane.getChildren().add(surnameButton);
-        actualiseGraph.add(surnameButton);
-
-        surnameButton.setOnAction(event -> {
-            String surname=textFieldsurname.getText();
-            abstractServer.nickname=surname;
-            configStage.setTitle(surname);
-        });
-
-        Text iptext = new Text("IP : ");
-        iptext.setLayoutX(5);
-        iptext.setLayoutY(45);
-        configPane.getChildren().add(iptext);
-        actualiseGraph.add(iptext);
-        TextField textField = null;
-        try {
-            textField = new TextField(abstractServer.getInterfaceIP(0).toString());
-        } catch (BadCallException e) {
-            afficheError("Error 23");
-        }
-        configPane.getChildren().add(textField);
-        actualiseGraph.add(textField);
-        textField.setLayoutX(5);
-        textField.setLayoutY(60);
-
-        Button validationButton = new Button("OK");
-        validationButton.setLayoutY(60);
-        validationButton.setLayoutX(200);
-        final TextField finalTextField = textField;
-        validationButton.setOnAction(event ->{
-            if(!bugmode) {
-                String string = finalTextField.getText();
-
-                Boolean isAnIp = true;
-
-                IP Ip = null;
-
-                try {
-                    Ip = IP.stringToIP(string);
-                } catch (BadCallException e) {
-                    afficheError("Wrong Argument : Not an IP");
-                    try {
-                        finalTextField.setText(abstractServer.getInterfaceIP(0).toString());
-                    } catch (BadCallException e1) {
-                        e1.printStackTrace();
-                    }
-                    isAnIp = false;
-                }
-
-                if (isAnIp) {
-                    abstractServer.configureIP(0, Ip);
-                }
-
-
-            }
-
-
-        });
-
-        configPane.getChildren().add(validationButton);
-        actualiseGraph.add(validationButton);
-
-        Text gatewaytext = new Text("gateway : ");
-        gatewaytext.setLayoutX(5);
-        gatewaytext.setLayoutY(105);
-        configPane.getChildren().add(gatewaytext);
-        actualiseGraph.add(gatewaytext);
-        TextField textFieldgateway = null;
-
-        textFieldgateway = new TextField(abstractServer.getGateway().toString());
-
-        configPane.getChildren().add(textFieldgateway);
-        actualiseGraph.add(textFieldgateway);
-        textFieldgateway.setLayoutX(5);
-        textFieldgateway.setLayoutY(120);
-
-        Button validationButtongateway = new Button("OK");
-        validationButtongateway.setLayoutY(120);
-        validationButtongateway.setLayoutX(200);
-        final TextField finalTextFieldgateway = textFieldgateway;
-        validationButtongateway.setOnAction(event ->{
-            if(!bugmode) {
-                String string = finalTextFieldgateway.getText();
-
-                Boolean isAnIp = true;
-
-                IP Ip = null;
-
-                try {
-                    Ip = IP.stringToIP(string);
-                } catch (BadCallException e) {
-                    afficheError("Wrong Argument : Not an IP");
-
-                    finalTextFieldgateway.setText(abstractServer.getGateway().toString());
-
-                    isAnIp = false;
-                }
-
-                if (isAnIp) {
-                    abstractServer.configureGateway(Ip);
-                }
-
-
-            }
-        });
-
-        configPane.getChildren().add(validationButtongateway);
-        actualiseGraph.add(validationButtongateway);
-
-    }
-
-    public static void updateConfigMenuRouter (Stage configStage,AnchorPane configPane,ArrayList<Object> actualiseGraph,AbstractRouter abstractRouter) {
-
-        int m = actualiseGraph.size();
-
-        for(int a=0;a<m;a++) {
-            configPane.getChildren().remove(actualiseGraph.get(a));
-
-
-        }
-        actualiseGraph.clear();
-
-        TextField textFieldsurname = new TextField(abstractRouter.nickname);
-        textFieldsurname.setLayoutY(30);
-        textFieldsurname.setLayoutX(200);
-        textFieldsurname.setPrefWidth(100);
-        configPane.getChildren().add(textFieldsurname);
-        actualiseGraph.add(textFieldsurname);
-
-        Button surnameButton = new Button ("OK");
-        surnameButton.setLayoutX(300);
-        surnameButton.setLayoutY(30);
-        configPane.getChildren().add(surnameButton);
-        actualiseGraph.add(surnameButton);
-
-        surnameButton.setOnAction(event -> {
-            String surname=textFieldsurname.getText();
-            abstractRouter.nickname=surname;
-            configStage.setTitle(surname);
-        });
-
-        int i = 0;
-
-
-
-        TextField textFieldIPDHCP = new TextField();
-
-        if (abstractRouter.getDHCPaddress()!=null) {
-            textFieldIPDHCP.setText(abstractRouter.getDHCPaddress().toString());
-        }
-
-        textFieldIPDHCP.setLayoutX(250);
-        textFieldIPDHCP.setLayoutY(0);
-        configPane.getChildren().add(textFieldIPDHCP);
-        actualiseGraph.add(textFieldIPDHCP);
-
-        CheckBox checkBox = new CheckBox("DHCP Relay");
-        checkBox.setLayoutX(150);
-        checkBox.setLayoutY(0);
-        configPane.getChildren().add(checkBox);
-        actualiseGraph.add(checkBox);
-        checkBox.setSelected(abstractRouter.isDHCPRelay());
-
-        checkBox.setOnAction(event -> {
-                    if(!bugmode) {
-                        if(checkBox.selectedProperty().getValue()) {
-                            try {
-                                String stringDHCP = textFieldIPDHCP.getText();
-                                IP ipDHCP = IP.stringToIP(stringDHCP);
-                                abstractRouter.setDHCPRelay(ipDHCP);
-
-                            } catch (BadCallException e) {
-                                checkBox.setSelected(false);
-                                afficheError("Bad DHCP IP");
-                            }
-                        } else {
-                            abstractRouter.stopDHCPRelay();
-                            
-                        }
-                    } else {
-                        if(checkBox.selectedProperty().getValue()) {
-                            checkBox.setSelected(false);
-                        } else {
-                            checkBox.setSelected(true);
-                        }
-                    }
-        });
-
-
-
-
-
-        while (true) {
-            try {
-                abstractRouter.getInterfaceIP(i);
-
-
-                Text porttext = new Text("PORT" + i + " : ");
-                porttext.setLayoutX(5);
-                porttext.setLayoutY(45 + 90 * i);
-                configPane.getChildren().add(porttext);
-                actualiseGraph.add(porttext);
-
-                Text iptext = new Text("IP : ");
-                iptext.setLayoutX(5);
-                iptext.setLayoutY(75 + 90 * i);
-                configPane.getChildren().add(iptext);
-                actualiseGraph.add(iptext);
-
-                TextField textField = new TextField(abstractRouter.getInterfaceIP(i).toString());
-                configPane.getChildren().add(textField);
-                actualiseGraph.add(textField);
-                textField.setLayoutX(5);
-                textField.setLayoutY(90 + 90 * i);
-                Button validationButton = new Button("OK");
-                validationButton.setLayoutY(90 + 90 * i);
-                validationButton.setLayoutX(200);
-                int ilambda = i;
-                validationButton.setOnAction(event -> {
-                    if(!bugmode) {
-                        String string = textField.getText();
-
-                        Boolean isAnIp = true;
-
-                        IP nIp = null;
-
-                        try {
-                            nIp = IP.stringToIP(string);
-                        } catch (BadCallException e) {
-                            afficheError("Wrong Argument : Not an IP");
-                            try {
-                                textField.setText(abstractRouter.getInterfaceIP(ilambda).toString());
-                            } catch (BadCallException e1) {
-                                e1.printStackTrace();
-                            }
-                            isAnIp = false;
-                        }
-
-                        if (isAnIp) {
-                            abstractRouter.configureIP(ilambda, nIp);
-                        }
-                    }
-
-                });
-
-                configPane.getChildren().add(validationButton);
-                actualiseGraph.add(validationButton);
-            } catch (BadCallException e) {
-                break;
-            }
-            i++;
-
-
-        }
-
-
-
-        Text tablerout = new Text("Routing table : ");
-        tablerout.setLayoutX(5);
-        tablerout.setLayoutY(60 + 90 * (i));
-        configPane.getChildren().add(tablerout);
-        actualiseGraph.add(tablerout);
-
-        ArrayList<ArrayList<Object>> allroutes = abstractRouter.getAllRoutes();
-        int n = allroutes.size();
-
-        Text subnetText = new Text("Subnet");
-        Text maskText = new Text("Mask");
-        Text gatewayText = new Text("Gateway");
-        Text portnumberText = new Text("Port Number");
-
-        subnetText.setLayoutY(75 + 90 * (i));
-        maskText.setLayoutY(75 + 90 * (i));
-        gatewayText.setLayoutY(75 + 90 * (i));
-        portnumberText.setLayoutY(75 + 90 * (i));
-
-        subnetText.setLayoutX(5);
-        maskText.setLayoutX(105);
-        gatewayText.setLayoutX(205);
-        portnumberText.setLayoutX(305);
-
-        configPane.getChildren().addAll(subnetText, maskText, gatewayText, portnumberText);
-        actualiseGraph.add(subnetText);
-        actualiseGraph.add(maskText);
-        actualiseGraph.add(gatewayText);
-        actualiseGraph.add(portnumberText);
-
-        Button validationRouteButton = new Button("OK");
-        validationRouteButton.setLayoutY(60 + 90 * (i));
-        validationRouteButton.setLayoutX(400);
-
-
-        configPane.getChildren().add(validationRouteButton);
-        actualiseGraph.add(validationRouteButton);
-
-
-        Button addRouteButton = new Button("New");
-        addRouteButton.setLayoutY(60 + 90 * (i));
-        addRouteButton.setLayoutX(450);
-        configPane.getChildren().add(addRouteButton);
-        actualiseGraph.add(addRouteButton);
-
-
-
-
-        ArrayList <ArrayList <Object>> tableRouteField = new ArrayList<>();
-
-        ArrayList <Boolean> tablerouteok = new ArrayList<>();
-
-        final int[] j = {0};
-
-        while (j[0] < n) {
-
-            TextField subnetTextField = new TextField(allroutes.get(j[0]).get(0).toString());
-            TextField maskTextField = new TextField(allroutes.get(j[0]).get(1).toString());
-            TextField gatewayTextField = new TextField(allroutes.get(j[0]).get(2).toString());
-            TextField portnumberTextField = new TextField(allroutes.get(j[0]).get(3).toString());
-            Button    deleteButton = new Button("DELETE");
-
-            tablerouteok.add(true);
-            int j1= j[0];
-            int i1=i;
-            deleteButton.setOnAction(event -> {
-                if(!bugmode) {
-                    tablerouteok.set(j1, false);
-
-                    Text deleteConfirm = new Text("Ready to be deleted");
-                    deleteConfirm.setLayoutY(105 + 90 * (i1) + 30 * (j1));
-                    deleteConfirm.setLayoutX(5);
-                    configPane.getChildren().add(deleteConfirm);
-                    actualiseGraph.add(deleteConfirm);
-
-                    configPane.getChildren().remove(subnetTextField);
-                    configPane.getChildren().remove(maskTextField);
-                    configPane.getChildren().remove(gatewayTextField);
-                    configPane.getChildren().remove(portnumberTextField);
-                    configPane.getChildren().remove(deleteButton);
-
-                    actualiseGraph.remove(subnetTextField);
-                    actualiseGraph.remove(maskTextField);
-                    actualiseGraph.remove(gatewayTextField);
-                    actualiseGraph.remove(portnumberTextField);
-                    actualiseGraph.remove(deleteButton);
-                }
-
-
-            });
-
-            ArrayList <Object> tablerouteI = new ArrayList<>();
-            tablerouteI.add(subnetTextField);
-            tablerouteI.add(maskTextField);
-            tablerouteI.add(gatewayTextField);
-            tablerouteI.add(portnumberTextField);
-
-            tableRouteField.add(tablerouteI);
-
-            subnetTextField.setLayoutY(90 + 90 * (i)+30*(j[0]));
-            maskTextField.setLayoutY(90 + 90 * (i)+30*(j[0]));
-            gatewayTextField.setLayoutY(90 + 90 * (i)+30*(j[0]));
-            portnumberTextField.setLayoutY(90 + 90 * (i)+30*(j[0]));
-            deleteButton.setLayoutY(90 + 90 * (i)+30*(j[0]));
-
-            subnetTextField.setLayoutX(5);
-            maskTextField.setLayoutX(105);
-            gatewayTextField.setLayoutX(205);
-            portnumberTextField.setLayoutX(305);
-            deleteButton.setLayoutX(405);
-
-            subnetTextField.setPrefWidth(95);
-            maskTextField.setPrefWidth(95);
-            gatewayTextField.setPrefWidth(95);
-            portnumberTextField.setPrefWidth(95);
-
-
-            configPane.getChildren().addAll(subnetTextField, maskTextField, gatewayTextField, portnumberTextField,deleteButton);
-            actualiseGraph.add(subnetTextField);
-            actualiseGraph.add(maskTextField);
-            actualiseGraph.add(gatewayTextField);
-            actualiseGraph.add(portnumberTextField);
-            actualiseGraph.add(deleteButton);
-
-            j[0]++;
-        }
-
-
-        final int finalI = i;
-        addRouteButton.setOnAction(event ->{
-                    if(!bugmode) {
-                        TextField subnetTextField = new TextField("");
-                        TextField maskTextField = new TextField("");
-                        TextField gatewayTextField = new TextField("");
-                        TextField portnumberTextField = new TextField("");
-                        Button deleteButton = new Button("DELETE");
-
-                        tablerouteok.add(true);
-                        int j1 = j[0];
-                        int i1 = finalI;
-                        deleteButton.setOnAction(event1 -> {
-
-                            tablerouteok.set(j1, false);
-
-                            Text deleteConfirm = new Text("Ready to be deleted");
-                            deleteConfirm.setLayoutY(105 + 90 * (i1) + 30 * (j1));
-                            deleteConfirm.setLayoutX(5);
-                            configPane.getChildren().add(deleteConfirm);
-                            actualiseGraph.add(deleteConfirm);
-
-                            configPane.getChildren().remove(subnetTextField);
-                            configPane.getChildren().remove(maskTextField);
-                            configPane.getChildren().remove(gatewayTextField);
-                            configPane.getChildren().remove(portnumberTextField);
-                            configPane.getChildren().remove(deleteButton);
-
-                            actualiseGraph.remove(subnetTextField);
-                            actualiseGraph.remove(maskTextField);
-                            actualiseGraph.remove(gatewayTextField);
-                            actualiseGraph.remove(portnumberTextField);
-                            actualiseGraph.remove(deleteButton);
-
-
-                        });
-
-                        ArrayList<Object> tablerouteI = new ArrayList<>();
-                        tablerouteI.add(subnetTextField);
-                        tablerouteI.add(maskTextField);
-                        tablerouteI.add(gatewayTextField);
-                        tablerouteI.add(portnumberTextField);
-
-                        tableRouteField.add(tablerouteI);
-
-                        subnetTextField.setLayoutY(90 + 90 * (finalI) + 30 * (j[0]));
-                        maskTextField.setLayoutY(90 + 90 * (finalI) + 30 * (j[0]));
-                        gatewayTextField.setLayoutY(90 + 90 * (finalI) + 30 * (j[0]));
-                        portnumberTextField.setLayoutY(90 + 90 * (finalI) + 30 * (j[0]));
-                        deleteButton.setLayoutY(90 + 90 * (finalI) + 30 * (j[0]));
-
-                        subnetTextField.setLayoutX(5);
-                        maskTextField.setLayoutX(105);
-                        gatewayTextField.setLayoutX(205);
-                        portnumberTextField.setLayoutX(305);
-                        deleteButton.setLayoutX(405);
-
-                        subnetTextField.setPrefWidth(95);
-                        maskTextField.setPrefWidth(95);
-                        gatewayTextField.setPrefWidth(95);
-                        portnumberTextField.setPrefWidth(95);
-
-
-                        configPane.getChildren().addAll(subnetTextField, maskTextField, gatewayTextField, portnumberTextField, deleteButton);
-                        actualiseGraph.add(subnetTextField);
-                        actualiseGraph.add(maskTextField);
-                        actualiseGraph.add(gatewayTextField);
-                        actualiseGraph.add(portnumberTextField);
-                        actualiseGraph.add(deleteButton);
-
-                        j[0]++;
-
-                    }
-        });
-
-
-        validationRouteButton.setOnAction(event -> {
-
-                    if(!bugmode) {
-                        ArrayList<ArrayList<Object>> tablerouteObject = new ArrayList<ArrayList<Object>>();
-
-                        int n1 = tableRouteField.size();
-                        try {
-                            for (int i2 = 0; i2 < n1; i2++) {
-                                if (tablerouteok.get(i2)) {
-                                    ArrayList<Object> tablerouteI = new ArrayList<Object>();
-                                    TextField textField1 = (TextField) tableRouteField.get(i2).get(0);
-                                    TextField textField2 = (TextField) tableRouteField.get(i2).get(1);
-                                    TextField textField3 = (TextField) tableRouteField.get(i2).get(2);
-                                    TextField textField4 = (TextField) tableRouteField.get(i2).get(3);
-
-
-                                    tablerouteI.add(IP.stringToIP(textField1.getText()));
-                                    tablerouteI.add(IP.stringToIP(textField2.getText()));
-                                    tablerouteI.add(IP.stringToIP(textField3.getText()));
-                                    tablerouteI.add(Integer.parseInt(textField4.getText()));
-
-
-                                    tablerouteObject.add(tablerouteI);
-                                }
-
-                            }
-                            abstractRouter.setAllRoutes(tablerouteObject);
-                            updateConfigMenuRouter(configStage,configPane, actualiseGraph, abstractRouter);
-                        } catch (BadCallException e) {
-                            afficheError("Route invalide");
-                        } catch (NumberFormatException e) {
-                            afficheError("Port invalide");
-                        }
-
-                    }
-
-        });
-    }
 
     /**
      * Fonction créatrice, on peut le dire c'est Dieu. Alleluia
@@ -1904,71 +907,7 @@ public class DeviceManager {
 
 
             Image image;
-            if (device.contains("pc")) {
-                image = imagepc;
-                if (!loadmode) {
-                    if(device.contains("0")) {
-                        array_list_of_devices.add(factory.newStandardPC());
-                    }
-
-                    AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_devices.size() - 1);
-
-                    System.out.println(abstractClient.getName());
-                    System.out.println(abstractClient.getId());
-                    System.out.println(abstractClient.getInterfaceMAC(0));
-                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
-                }
-            } else if (device.contains("server")) {
-                image = imageserver;
-                if (!loadmode) {
-                    if(device.contains("0")) {
-                        System.out.println("Server DHCP");
-                        array_list_of_devices.add(factory.newDHCPServer());
-                    } else if (device.contains("1")) {
-                        System.out.println("Server FTP");
-                        array_list_of_devices.add(factory.newStandardFTPServer());
-                    } else if (device.contains("2")) {
-                        System.out.println("Server WEB");
-                        array_list_of_devices.add(factory.newStandardWEBServer());
-                    }
-                    System.out.println(array_list_of_devices.get(array_list_of_devices.size() - 1).getName());
-                    System.out.println(array_list_of_devices.get(array_list_of_devices.size() - 1).getId());
-                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
-                }
-            } else if (device.contains("router")) {
-                image = imagerouteur;
-                if (!loadmode) {
-                    if(device.contains("0")) {
-                        array_list_of_devices.add(factory.newStandard2ETHRouter());
-                    } else if(device.contains("1")) {
-                        array_list_of_devices.add(factory.newCiscoCRS1Router());
-                    } else if(device.contains("2")) {
-                        array_list_of_devices.add(factory.newCisco2811Router());
-                    }
-                    System.out.println(array_list_of_devices.get(array_list_of_devices.size() - 1).getName());
-                    System.out.println(array_list_of_devices.get(array_list_of_devices.size() - 1).getId());
-
-                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
-
-
-                }
-            } else if (device.contains("switch")) {
-                image = imageswitch;
-                if (!loadmode) {
-                    if(device.contains("0")) {
-                        array_list_of_devices.add(factory.newStandard24ETHSwitch());
-                    }
-                    System.out.println(array_list_of_devices.get(array_list_of_devices.size() - 1).getName());
-                    System.out.println(array_list_of_devices.get(array_list_of_devices.size() - 1).getId());
-                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
-                }
-            } else {
-                image = imageerror;
-            }
-
-
-
-
+            image = imageerror;
             imageView.setImage(image);
             //Variable d'états
             double difxi = content.getWidth() - anchorPane.getPrefWidth();
@@ -1982,133 +921,312 @@ public class DeviceManager {
             array_list_of_image.add(imageView);
 
 
-            //Surnom de l'appareil
-            String surname = "";
-            if(!loadmode) {
-                surname = array_list_of_devices.get(array_list_of_image.indexOf(imageView)).getName() + " : " + device;
-                array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname=surname;
-            } else {
-                surname = array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname;
+
+            Image imageError = new Image("file:sprites/alert.png");
+            ImageView imageViewError = new ImageView();
+            imageViewError.setImage(imageError);
+            content.getChildren().add(imageViewError);
+            imageViewError.toFront();
+
+
+
+            arrayList_of_error.add(imageViewError);
+            arrayListOfStateError.add(new Integer(0));
+
+            if (device.contains("pc")) {
+                image = imagepc;
+                imageView.setImage(image);
+                if (!loadmode) {
+                    if(device.contains("0")) {
+                        array_list_of_devices.add(factory.newStandardPC());
+                    }
+
+                    AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_devices.size() - 1);
+
+
+                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
+                }
+                if(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
+                    arrayList_of_state.add(new Integer(1));
+                } else {
+                    arrayList_of_state.add(new Integer(0));
+                }
+            } else if (device.contains("server")) {
+                image = imageserver;
+                imageView.setImage(image);
+                if (!loadmode) {
+                    if(device.contains("0")) {
+
+                        array_list_of_devices.add(factory.newDHCPServer());
+                    } else if (device.contains("1")) {
+
+                        array_list_of_devices.add(factory.newStandardFTPServer());
+                    } else if (device.contains("2")) {
+
+                        array_list_of_devices.add(factory.newStandardWEBServer());
+                    }
+
+                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
+                }
+                if(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
+                    arrayList_of_state.add(new Integer(1));
+                } else {
+                    arrayList_of_state.add(new Integer(0));
+                }
+            } else if (device.contains("router")) {
+                image = imagerouteur;
+                imageView.setImage(image);
+                if (!loadmode) {
+                    if(device.contains("0")) {
+                        array_list_of_devices.add(factory.newStandard2ETHRouter());
+                    } else if(device.contains("1")) {
+                        array_list_of_devices.add(factory.newCiscoCRS1Router());
+                    } else if(device.contains("2")) {
+                        array_list_of_devices.add(factory.newCisco2811Router());
+                    }
+
+
+                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
+
+
+                }
+                if(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
+                    arrayList_of_state.add(new Integer(1));
+                } else {
+                    arrayList_of_state.add(new Integer(0));
+                }
+            } else if (device.contains("switch")) {
+                image = imageswitch;
+                imageView.setImage(image);
+                if (!loadmode) {
+                    if(device.contains("0")) {
+                        array_list_of_devices.add(factory.newStandard24ETHSwitch());
+                    } else if(device.contains("1")) {
+                        array_list_of_devices.add(factory.newAvayaERS2550T50ETHSwitch());
+                    } else if(device.contains("2")) {
+                        array_list_of_devices.add(factory.newNetgearM4100D12G12ETHSwitch());
+                    }
+
+                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
+                }
+                if(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
+                    arrayList_of_state.add(new Integer(1));
+                } else {
+                    arrayList_of_state.add(new Integer(0));
+                }
+            } else if (device.contains("hub")) {
+                image = imagehub;
+                imageView.setImage(image);
+                if (!loadmode) {
+                    if(device.contains("0")) {
+                        array_list_of_devices.add(factory.newStandard24ETHHub());
+                    } else if(device.contains("1")) {
+                        array_list_of_devices.add(factory.newLinkBuilder3Com12ETHHub());
+                    } else if(device.contains("2")) {
+                        array_list_of_devices.add(factory.newCentreComMR820TR8ETHHub());
+                    }
+
+                    array_list_of_devices.get(array_list_of_devices.size() - 1).start();
+                }
+                if(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
+                    arrayList_of_state.add(new Integer(1));
+                } else {
+                    arrayList_of_state.add(new Integer(0));
+                }
+            } else if (device.contains("wan")) {
+                image = imagewan;
+                imageView.setImage(image);
+
+                if(WAN == 0) {
+                    WAN = 1;
+                } else {
+
+                    WAN = 2;
+                }
+
+                if (!loadmode) {
+
+                    if(WAN==1) {
+                        array_list_of_devices.add(factory.newWANPort());
+
+
+                        array_list_of_devices.get(array_list_of_devices.size() - 1).start();
+
+                    }
+
+                }
+                if(WAN!=2) {
+                    if (array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
+                        arrayList_of_state.add(new Integer(1));
+                    } else {
+                        arrayList_of_state.add(new Integer(0));
+                    }
+                }
             }
+
+
+            if(WAN!=2) {
+
+                imageView.preserveRatioProperty().set(true);
+
+                arrayListOfX.add(imageView.getX() / zoomScale);
+                arrayListOfY.add(imageView.getY() / zoomScale);
+
+                //Placement de l'image error
+                imageViewError.setX(-100);
+                imageViewError.setY(-100);
+
+
+                //Surnom de l'appareil
+                String surname = "";
+                if (!loadmode) {
+                    surname = array_list_of_devices.get(array_list_of_image.indexOf(imageView)).getName() + " : " + device;
+                    if(device.contains("wan")) {
+                        surname = "WANPort";
+                    }
+                    array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname = surname;
+
+                } else {
+                    surname = array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname;
+                }
 
 
 
         /*
             Menu info de l'appareil
          */
-            AnchorPane infoAnchorPane = new AnchorPane();
-            arrayList_of_infoMenu.add(infoAnchorPane);
-            infoAnchorPane.setPrefHeight(10);
-            infoAnchorPane.setPrefWidth(10);
-            infoAnchorPane.setStyle("-fx-border-color: black;-fx-background-color: white ;");
+                AnchorPane infoAnchorPane = new AnchorPane();
+                arrayList_of_infoMenu.add(infoAnchorPane);
+                infoAnchorPane.setPrefHeight(10);
+                infoAnchorPane.setPrefWidth(10);
+                infoAnchorPane.setStyle("-fx-border-color: black;-fx-background-color: white ;");
 
-            ProgressBar progressBar = new ProgressBar();
-            arrayList_of_progressBar.add(progressBar);
-            progressBar.setPrefWidth(imageView.getImage().getWidth());
-            progressBar.setPrefHeight(1);
-            progressBar.setProgress(0);
+                ProgressBar progressBar = new ProgressBar();
+                arrayList_of_progressBar.add(progressBar);
+                progressBar.setPrefWidth(imageView.getImage().getWidth());
+                progressBar.setPrefHeight(1);
+                progressBar.setProgress(0);
 
-            ProgressBar progressBarRequest = new ProgressBar();
-            arrayList_of_progressBarRequest.add(progressBarRequest);
-            progressBarRequest.setPrefWidth(imageView.getImage().getWidth());
-            progressBarRequest.setPrefHeight(1);
-            progressBarRequest.setProgress(0);
-
-
+                ProgressBar progressBarRequest = new ProgressBar();
+                arrayList_of_progressBarRequest.add(progressBarRequest);
+                progressBarRequest.setPrefWidth(imageView.getImage().getWidth());
+                progressBarRequest.setPrefHeight(1);
+                progressBarRequest.setProgress(0);
 
 
+                Text text1;
+                if (device.contains("pc")) {
+                    if (device.contains("0")) {
+                        text1 = new Text("PC Standard");
+                    } else {
+                        text1 = new Text("Error");
+                    }
 
+                } else if (device.contains("server")) {
+                    if (device.contains("0")) {
+                        text1 = new Text("Server DHCP");
+                    } else if (device.contains("1")) {
+                        text1 = new Text("Server FTP");
+                    } else if (device.contains("2")) {
+                        text1 = new Text("Server WEB");
+                    } else {
+                        text1 = new Text("Error");
+                    }
 
-            Text text1;
-            if (device.contains("pc")) {
-                if(device.contains("0")) {
-                    text1 = new Text("PC Standard");
-                } else {
-                    text1 = new Text ("Error");
-                }
+                } else if (device.contains("router")) {
+                    if (device.contains("0")) {
+                        text1 = new Text("Router 2 Ports ETH");
+                    } else if (device.contains("1")) {
+                        text1 = new Text("Router CISCO CRS1 12 Ports ETH");
+                    } else if (device.contains("2")) {
+                        text1 = new Text("Router CISCO 2811 2 Ports ETH 1 Port SERIAL");
+                    } else {
+                        text1 = new Text("Error");
+                    }
 
-            } else if (device.contains("server")) {
-                if(device.contains("0")) {
-                    text1 = new Text("Server DHCP");
-                } else if(device.contains("1")) {
-                    text1 = new Text("Server FTP");
-                } else if(device.contains("2")) {
-                    text1 = new Text("Server WEB");
+                } else if (device.contains("switch")) {
+                    if (device.contains("0")) {
+                        text1 = new Text("Switch 24 Ports");
+                    } else if (device.contains("1")) {
+                        text1 = new Text("Switch Avaya ERS2550T");
+                    } else if (device.contains("2")) {
+                        text1 = new Text("Switch Netgear M4100D12G");
+                    } else {
+                        text1 = new Text("Error");
+                    }
+                } else if (device.contains("hub")) {
+                    if (device.contains("0")) {
+                        text1 = new Text("Hub Standard 24 Ports ETH");
+                    } else if (device.contains("1")) {
+                        text1 = new Text("Hub Link Builder 3Com");
+                    } else if (device.contains("2")) {
+                        text1 = new Text("Hub CentreCom MR820TR");
+                    } else {
+                        text1 = new Text("Error");
+                    }
+                } else if (device.contains("wan")) {
+
+                    text1 = new Text("");
+
                 } else {
                     text1 = new Text("Error");
                 }
+                text1.setX(5);
+                text1.setY(15);
 
-            } else if (device.contains("router")) {
-                if(device.contains("0")) {
-                    text1 = new Text("Router 2 Ports ETH");
-                } else if(device.contains("1")) {
-                    text1 = new Text("Router CISCO CRS1 12 Ports ETH");
-                } else if(device.contains("2")) {
-                    text1 = new Text("Router CISCO 2811 2 Ports ETH 1 Port SERIAL");
-                } else {
-                    text1 = new Text("Error");
-                }
-
-            } else if (device.contains("switch")) {
-                if(device.contains("0")) {
-                    text1 = new Text("Switch 24 Ports");
-                } else {
-                    text1 = new Text("Error");
-                }
-            } else {
-                text1 = new Text("Error");
-            }
-            text1.setX(5);
-            text1.setY(15);
-
-            infoAnchorPane.getChildren().add(text1);
+                infoAnchorPane.getChildren().add(text1);
 
 
-            imageView.setOnMouseEntered(event -> {
-                if(!bugmode) {
-                    infoAnchorPane.setLayoutX(imageView.getX() + imageView.getImage().getWidth());
-                    infoAnchorPane.setLayoutY(imageView.getY());
+                imageView.setOnMouseEntered(event -> {
+                    if (!bugmode) {
+                        infoAnchorPane.setLayoutX(imageView.getX() + imageView.getImage().getWidth());
+                        infoAnchorPane.setLayoutY(imageView.getY());
 
-                    affichePopupInfo(content, infoAnchorPane);
-
-
-                }
-            });
-
-            imageView.setOnMouseExited(event -> {
+                        affichePopupInfo(content, infoAnchorPane);
 
 
-                enlevePopupConfiq(content,infoAnchorPane);
+                    }
+                });
+
+                imageView.setOnMouseExited(event -> {
 
 
+                    enlevePopupConfiq(content, infoAnchorPane);
 
 
+                });
 
 
-            });
+                //Item du menu contextuelle deplacé ici car on lui fait référence juste en dessous
 
 
-            //Item du menu contextuelle deplacé ici car on lui fait référence juste en dessous
-            MenuItem itemOnOff = new MenuItem("ON");
-            itemOnOff.setOnAction(event ->{
-                reset("", status, content);
+                MenuItem itemOnOff = new MenuItem("ON");
+                itemOnOff.setOnAction(event -> {
+                    reset("", status, content);
 
-                if(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).isRunning()) {
-                    array_list_of_devices.get(array_list_of_image.indexOf(imageView)).changeState(false);
-                    itemOnOff.setText("ON");
-                    System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname +  " : I am OFF now");
-                }else {
-                    array_list_of_devices.get(array_list_of_image.indexOf(imageView)).changeState(true);
-                    itemOnOff.setText("OFF");
-                    System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname + " : I am ON now");
-                }
-                updateInfoMenu();
-
-            });
-
-            //On reviens à la fenetre de info
+                    if (arrayList_of_state.get(array_list_of_image.indexOf(imageView)).equals(1)) {
+                        if (!isPaused) {
+                            array_list_of_devices.get(array_list_of_image.indexOf(imageView)).changeState(false);
+                        }
+                        arrayList_of_state.set(array_list_of_image.indexOf(imageView), new Integer(0));
 
 
+                        itemOnOff.setText("ON");
+                        System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname + " : I am OFF now");
+                    } else {
+                        if (!isPaused) {
+                            array_list_of_devices.get(array_list_of_image.indexOf(imageView)).changeState(true);
+                        }
+                        arrayList_of_state.set(array_list_of_image.indexOf(imageView), new Integer(1));
+
+                        itemOnOff.setText("OFF");
+                        System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname + " : I am ON now");
+                    }
+                    Actualization.updateInfoMenu();
+
+                });
+
+                //On reviens à la fenetre de info
 
                 Text on_off = new Text();
 
@@ -2122,21 +1240,39 @@ public class DeviceManager {
                 }
 
                 on_off.setX(5);
-                on_off.setY(30);
+                on_off.setY(45);
+                if(device.contains("wan")) {
+                    on_off.setY(30);
+                }
                 infoAnchorPane.getChildren().add(on_off);
-
 
 
                 Text linkstate = new Text("Free ports : " + array_list_of_devices.get(array_list_of_image.indexOf(imageView)).getFreePorts().size());
                 linkstate.setX(5);
-                linkstate.setY(60);
+                linkstate.setY(75);
+                if(device.contains("wan")) {
+                    linkstate.setY(60);
+                }
                 infoAnchorPane.getChildren().add(linkstate);
 
 
                 Text isverboseactive = new Text("Verbose : OFF");
                 isverboseactive.setX(5);
-                isverboseactive.setY(45);
+                isverboseactive.setY(60);
+                if(device.contains("wan")) {
+                    isverboseactive.setY(45);
+                }
                 infoAnchorPane.getChildren().add(isverboseactive);
+
+                Text surnom = new Text(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname);
+                surnom.setX(5);
+                surnom.setY(30);
+                if(device.contains("wan")) {
+                    surnom.setY(15);
+                }
+                infoAnchorPane.getChildren().add(surnom);
+
+
 
 
 
@@ -2144,73 +1280,95 @@ public class DeviceManager {
         /*
              Fenetre de configuration
          */
-            Stage configStage = new Stage();
+                Stage configStage = new Stage();
 
-            configStage.setOnCloseRequest(event -> {
-                if(bugmode) {
-                    event.consume();
-                }
-            });
+                configStage.setOnCloseRequest(event -> {
+                    if (bugmode) {
+                        event.consume();
+                    }
+                });
 
-            ScrollPane configScroll = new ScrollPane();
-            AnchorPane configPane = new AnchorPane();
+                ScrollPane configScroll = new ScrollPane();
+                AnchorPane configPane = new AnchorPane();
 
-            configPane.setOnMouseClicked(event -> {
+                configPane.setOnMouseClicked(event -> {
 
-                if(DeviceManager.is_bugging()) {
-                    Toolkit.getDefaultToolkit().beep();
-                    DeviceManager.errorStage.toFront();
-                }
-            });
-
-
-            configScroll.setContent(configPane);
-            Scene configScene = new Scene(configScroll,500,500);
-
-            configPane.setPrefWidth(480);
-            configPane.setPrefHeight(480);
-            configStage.setTitle(surname);
-            configStage.setScene(configScene);
-            configStage.sizeToScene();
-
-            configStage.getIcons().add(new Image("file:sprites/arjl-logo.png"));
-
-            arrayList_of_configStage.add(configStage);
-
-            if(device.contains("pc")) {
-                Button actualiseButton = new Button("Actualise");
-                actualiseButton.setLayoutX(5);
-                actualiseButton.setLayoutY(0);
-                configPane.getChildren().add(actualiseButton);
-
-
-
-
-                AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
-
-                ArrayList <Object> actualiseGraph = new ArrayList<>();
-
-
-
-
-                updateConfigMenuPc(configStage,configPane, actualiseGraph, abstractClient);
-
-
-                actualiseButton.setOnAction(event -> {
-                    if(!bugmode) {
-                        try {
-                            updateConfigMenuPc(configStage,configPane, actualiseGraph, abstractClient);
-                        } catch (BadCallException e) {
-                            e.printStackTrace();
-                        }
+                    if (DeviceManager.is_bugging()) {
+                        Toolkit.getDefaultToolkit().beep();
+                        DeviceManager.errorStage.toFront();
                     }
                 });
 
 
-            } else if(device.contains("switch")) {
-                AbstractSwitch abstractSwitch = (AbstractSwitch) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                configScroll.setContent(configPane);
+                Scene configScene = null;
 
-            } else if (device.contains("router")) {
+
+                if(device.contains("router")) {
+                    configScene = new Scene(configScroll, 700, 500);
+                } else if (device.contains("server0")) {
+                    configScene = new Scene(configScroll, 560, 500);
+                } else {
+                    configScene = new Scene(configScroll, 500, 500);
+                }
+
+                configPane.setPrefWidth(480);
+                if(device.contains("router")) {
+                    configPane.setPrefWidth(680);
+                }
+                configPane.setPrefHeight(480);
+                configStage.setTitle(surname);
+                configStage.setScene(configScene);
+                configStage.sizeToScene();
+
+                configStage.getIcons().add(new Image("file:sprites/arjl-logo.png"));
+
+                arrayList_of_configStage.add(configStage);
+
+                MenuItem itemConfig = new MenuItem("Configuration");
+
+
+                if (device.contains("pc")) {
+                    Button actualiseButton = new Button("Actualise");
+                    actualiseButton.setLayoutX(5);
+                    actualiseButton.setLayoutY(0);
+                    configPane.getChildren().add(actualiseButton);
+
+
+                    AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+
+                    ArrayList<Object> actualiseGraph = new ArrayList<>();
+
+                    itemConfig.setOnAction(event -> {
+                        reset("", status, content);
+                        try {
+                            MenuConfig.updateConfigMenuPc(configStage, configPane, actualiseGraph, abstractClient, surnom);
+                        } catch (BadCallException e) {
+                            e.printStackTrace();
+                        }
+                        if (!configStage.isShowing()) {
+                            configStage.show();
+                        } else {
+                            configStage.toFront();
+                        }
+
+
+                    });
+                    MenuConfig.updateConfigMenuPc(configStage, configPane, actualiseGraph, abstractClient, surnom);
+
+
+                    actualiseButton.setOnAction(event -> {
+                        if (!bugmode) {
+                            try {
+                                MenuConfig.updateConfigMenuPc(configStage, configPane, actualiseGraph, abstractClient, surnom);
+                            } catch (BadCallException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+
+                }  else if (device.contains("router")) {
 
                     Button actualiseButton = new Button("Actualise");
                     actualiseButton.setLayoutX(5);
@@ -2219,45 +1377,107 @@ public class DeviceManager {
 
                     AbstractRouter abstractRouter = (AbstractRouter) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
 
-                    ArrayList <Object> actualiseGraph = new ArrayList<>();
+                    ArrayList<Object> actualiseGraph = new ArrayList<>();
+                    itemConfig.setOnAction(event -> {
+                        reset("", status, content);
 
-                    updateConfigMenuRouter(configStage,configPane,actualiseGraph,abstractRouter);
+                        MenuConfig.updateConfigMenuRouter(configStage, configPane, actualiseGraph, abstractRouter, surnom);
+
+                        if (!configStage.isShowing()) {
+                            configStage.show();
+                        } else {
+                            configStage.toFront();
+                        }
+
+
+                    });
+
+                    MenuConfig.updateConfigMenuRouter(configStage, configPane, actualiseGraph, abstractRouter, surnom);
 
                     actualiseButton.setOnAction(event -> {
-                        if(!bugmode) {
-                            updateConfigMenuRouter(configStage,configPane, actualiseGraph, abstractRouter);
+                        if (!bugmode) {
+                            MenuConfig.updateConfigMenuRouter(configStage, configPane, actualiseGraph, abstractRouter, surnom);
 
                         }
                     });
 
 
-            } else if (device.contains("server")) {
+                } else if (device.contains("server")) {
 
-                Button actualiseButton = new Button("Actualise");
-                actualiseButton.setLayoutX(5);
-                actualiseButton.setLayoutY(0);
-                configPane.getChildren().add(actualiseButton);
+                    Button actualiseButton = new Button("Actualise");
+                    actualiseButton.setLayoutX(5);
+                    actualiseButton.setLayoutY(0);
+                    configPane.getChildren().add(actualiseButton);
 
-                AbstractServer abstractServer = (AbstractServer) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                    AbstractServer abstractServer = (AbstractServer) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
 
-                ArrayList <Object> actualiseGraph = new ArrayList<>();
+                    ArrayList<Object> actualiseGraph = new ArrayList<>();
 
+                    itemConfig.setOnAction(event -> {
+                        reset("", status, content);
 
-
-
-                updateConfigMenuServer(configStage,configPane, actualiseGraph, abstractServer);
-
-
-                actualiseButton.setOnAction(event -> {
-                    if(!bugmode) {
                         try {
-                            updateConfigMenuServer(configStage,configPane, actualiseGraph, abstractServer);
+                            MenuConfig.updateConfigMenuServer(configStage, configPane, actualiseGraph, abstractServer, surnom);
                         } catch (BadCallException e) {
                             e.printStackTrace();
                         }
-                    }
-                });
-                } else {
+
+                        if (!configStage.isShowing()) {
+                            configStage.show();
+                        } else {
+                            configStage.toFront();
+                        }
+
+
+                    });
+
+                    MenuConfig.updateConfigMenuServer(configStage, configPane, actualiseGraph, abstractServer, surnom);
+
+
+                    actualiseButton.setOnAction(event -> {
+                        if (!bugmode) {
+                            try {
+                                MenuConfig.updateConfigMenuServer(configStage, configPane, actualiseGraph, abstractServer, surnom);
+                            } catch (BadCallException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } else if (device.contains("wan")) {
+
+                    Button actualiseButton = new Button("Actualise");
+                    actualiseButton.setLayoutX(5);
+                    actualiseButton.setLayoutY(0);
+                    configPane.getChildren().add(actualiseButton);
+
+                    WANPort wanport = (WANPort) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+
+                    ArrayList<Object> actualiseGraph = new ArrayList<>();
+
+                    itemConfig.setOnAction(event -> {
+                        reset("", status, content);
+
+                        MenuConfig.updateConfigMenuWAN(configStage, configPane, actualiseGraph, wanport, surnom);
+
+
+                        if (!configStage.isShowing()) {
+                            configStage.show();
+                        } else {
+                            configStage.toFront();
+                        }
+
+
+                    });
+
+                    MenuConfig.updateConfigMenuWAN(configStage, configPane, actualiseGraph, wanport, surnom);
+
+
+                    actualiseButton.setOnAction(event -> {
+                        if (!bugmode) {
+                            MenuConfig.updateConfigMenuWAN(configStage, configPane, actualiseGraph, wanport, surnom);
+                        }
+                    });
+                }else {
                     Text errorText = new Text("Error");
                     configPane.getChildren().add(errorText);
                 }
@@ -2273,586 +1493,725 @@ public class DeviceManager {
         /*
             Initialisation du menu contextuel
          */
-            ContextMenu contextMenu = new ContextMenu();
+                ContextMenu contextMenu = new ContextMenu();
 
-            MenuItem itemDelete = new MenuItem("Delete");
-            itemDelete.setOnAction(event -> {
+                MenuItem itemDelete = new MenuItem("Delete");
+                itemDelete.setOnAction(event -> {
 
-                if (content.getChildren().contains(infoAnchorPane)) {
-                    content.getChildren().remove(infoAnchorPane);
-                }
-                if (content.getChildren().contains(progressBar)) {
-                    content.getChildren().remove(progressBar);
-                }
-                if (content.getChildren().contains(progressBarRequest)) {
-                    content.getChildren().remove(progressBarRequest);
-                }
-
-                try {
-                    enlevePopupConfiq(content,infoAnchorPane);
-                    suprimerImage(imageView, content);
-                } catch (BadCallException e) {
-                    e.printStackTrace();
-                }
-                reset("", status, content);
-
-            });
-            MenuItem itemLink = new MenuItem("Créer Lien");
-
-            itemLink.setOnAction(event -> {
-                reset("addlink", status, content);
-                firstimageView = imageView;
-                firstimagesizeX = imageView.getImage().getWidth();
-                firstimagesizeY = imageView.getImage().getHeight();
-                addlinkmode = 4;
-                status.setText("addLink 4");
-                if(firstimageView.getAccessibleText().equals("pc")) {
-                    firstimageView.setImage(imagepcselected);
-                } else if (firstimageView.getAccessibleText().equals("server")){
-                    firstimageView.setImage(imageserverselected);
-                } else if (firstimageView.getAccessibleText().equals("router")){
-                    firstimageView.setImage(imagerouteurselected);
-                } else if (firstimageView.getAccessibleText().equals("switch")){
-                    firstimageView.setImage(imageswitchselected);
-                }
-
-            });
-
-
-            MenuItem itemMultipleLink = new MenuItem("Créer Lien Multiple");
-            lienmultiple.setOnAction(event -> {
-                addlinkmode = 0;
-                reset("", status, content);
-                content.getChildren().remove(lienmultiple);
-
-            });
-            itemMultipleLink.setOnAction(event -> {
-                reset("addlink", status, content);
-                firstimageView = imageView;
-                firstimagesizeX = imageView.getImage().getWidth();
-                firstimagesizeY = imageView.getImage().getHeight();
-                addlinkmode = 6;
-                status.setText("addLink 6");
-                lienmultiple.setLayoutX(imageView.getX());
-                lienmultiple.setLayoutY(imageView.getY());
-                content.getChildren().add(lienmultiple);
-                if(firstimageView.getAccessibleText().equals("pc")) {
-                    firstimageView.setImage(imagepcselected);
-                } else if (firstimageView.getAccessibleText().equals("server")){
-                    firstimageView.setImage(imageserverselected);
-                } else if (firstimageView.getAccessibleText().equals("router")){
-                    firstimageView.setImage(imagerouteurselected);
-                } else if (firstimageView.getAccessibleText().equals("switch")){
-                    firstimageView.setImage(imageswitchselected);
-                }
-
-            });
-
-
-
-
-
-
-            MenuItem itemDeleteLink = new MenuItem("Supprimer liens");
-            itemDeleteLink.setOnAction(event -> {
-                reset("", status, content);
-                ArrayList<ElementOfLink> list_element = new ArrayList<>();
-
-                int n = array_list_of_link.size();
-                for (int i = 0; i < n; ++i) {
-                    ElementOfLink element = array_list_of_link.get(i);
-                    if (element.img1 == imageView) {
-                        list_element.add(element);
+                    if (content.getChildren().contains(infoAnchorPane)) {
+                        content.getChildren().remove(infoAnchorPane);
                     }
-                    if (element.img2 == imageView) {
-                        list_element.add(element);
+                    if (content.getChildren().contains(progressBar)) {
+                        content.getChildren().remove(progressBar);
+                    }
+                    if (content.getChildren().contains(progressBarRequest)) {
+                        content.getChildren().remove(progressBarRequest);
                     }
 
-                }
-
-                n = list_element.size();
-                for (int i = 0; i < n; ++i) {
                     try {
-                        suprimerLien(list_element.get(i).line,content,status);
+                        enlevePopupConfiq(content, infoAnchorPane);
+                        Supress.suprimerImage(imageView, content);
                     } catch (BadCallException e) {
                         e.printStackTrace();
                     }
-
-                }
-
-            });
-
-            MenuItem itemCharge = new MenuItem("Afficher charge");
-            itemCharge.setOnAction(event ->{
-                reset("", status, content);
-                progressBar.setLayoutX(imageView.getX());
-                progressBar.setLayoutY(imageView.getY() + imageView.getImage().getHeight());
-                progressBar.setPrefWidth(imageView.getImage().getWidth());
-                progressBar.setPrefHeight(1);
-                if (content.getChildren().contains(progressBar)) {
-                    content.getChildren().remove(progressBar);
-                } else {
-                    content.getChildren().add(progressBar);
-                    progressBar.setProgress(0);
-
-                }
-            });
-            MenuItem itemVerbose = new MenuItem("Activate Verbose");
-
-            itemVerbose.setOnAction(event ->{
-                reset("", status, content);
-                if(itemVerbose.getText().equals("Activate Verbose")){
-                    itemVerbose.setText("Desactivate Verbose");
-                    isverboseactive.setText("Verbose : ON");
-                    array_list_of_devices.get(array_list_of_image.indexOf(imageView)).setVerbose();
-                    System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname
-                            + " : I am speaking to you");
-
-                } else {
-                    itemVerbose.setText("Activate Verbose");
-                    isverboseactive.setText("Verbose : OFF");
-                    array_list_of_devices.get(array_list_of_image.indexOf(imageView)).stopVerbose();
-                    System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname
-                            + " : I will no longer speak to you");
-                }
-
-
-            });
-            contextMenu.getItems().addAll(itemOnOff,itemVerbose,itemCharge);
-
-            if(device.contains("pc")) {
-                MenuItem itemRequestA = new MenuItem("Avancement request");
-                itemRequestA.setOnAction(event -> {
                     reset("", status, content);
-                    progressBarRequest.setProgress(0);
 
-                    progressBarRequest.setPrefWidth(imageView.getImage().getWidth());
-
-                    if (content.getChildren().contains(progressBarRequest)) {
-                        content.getChildren().remove(progressBarRequest);
-                    } else {
-                        content.getChildren().add(progressBarRequest);
-                        progressBarRequest.setLayoutX(imageView.getX());
-                        progressBarRequest.setLayoutY(imageView.getY() - 13);
-
-
-                    }
                 });
-                contextMenu.getItems().add(itemRequestA);
-            }
+                MenuItem itemLink = new MenuItem("Create Link");
 
-
-
-            MenuItem itemConfig = new MenuItem("Configuration");
-            itemConfig.setOnAction(event -> {
-                reset("", status, content);
-                if(!configStage.isShowing()) {
-                    configStage.show();
-                } else {
-                    configStage.toFront();
-                }
-
-
-            });
-
-
-
-
-
-
-
-
-
-
-                    contextMenu.getItems().addAll(itemConfig);
-
-            /*
-                   Menu requete répétitive
-             */
-
-            if(device.contains("pc")) {
-                AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
-
-                Stage requestStage = new Stage();
-                AnchorPane requestPane = new AnchorPane();
-
-                requestPane.setOnMouseClicked(event -> {
-
-                    if(DeviceManager.is_bugging()) {
-                        Toolkit.getDefaultToolkit().beep();
-                        DeviceManager.errorStage.toFront();
+                itemLink.setOnAction(event -> {
+                    reset("addlink", status, content);
+                    firstimageView = imageView;
+                    firstimagesizeX = imageView.getImage().getWidth();
+                    firstimagesizeY = imageView.getImage().getHeight();
+                    addlinkmode = 4;
+                    status.setText("addLink 4");
+                    if (firstimageView.getAccessibleText().contains("pc")) {
+                        firstimageView.setImage(imagepcselected);
+                    } else if (firstimageView.getAccessibleText().contains("server")) {
+                        firstimageView.setImage(imageserverselected);
+                    } else if (firstimageView.getAccessibleText().contains("router")) {
+                        firstimageView.setImage(imagerouteurselected);
+                    } else if (firstimageView.getAccessibleText().contains("switch")) {
+                        firstimageView.setImage(imageswitchselected);
+                    } else if (firstimageView.getAccessibleText().contains("hub")) {
+                        firstimageView.setImage(imagehubselected);
+                    } else if (firstimageView.getAccessibleText().contains("wan")) {
+                        firstimageView.setImage(imagewanselected);
                     }
+
                 });
 
-                Scene requestScene = new Scene(requestPane,423,60);
-                requestStage.setTitle(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).getName() + " : " + device);
-                requestStage.setScene(requestScene);
-                requestStage.sizeToScene();
 
-                requestStage.setOnCloseRequest(event -> {
-                    if(bugmode) {
-                        event.consume();
+                MenuItem itemMultipleLink = new MenuItem("Create Multiple Link");
+                lienmultiple.setOnAction(event -> {
+                    addlinkmode = 0;
+                    reset("", status, content);
+                    content.getChildren().remove(lienmultiple);
+
+                });
+                itemMultipleLink.setOnAction(event -> {
+                    reset("addlink", status, content);
+                    firstimageView = imageView;
+                    firstimagesizeX = imageView.getImage().getWidth();
+                    firstimagesizeY = imageView.getImage().getHeight();
+                    addlinkmode = 6;
+                    status.setText("addLink 6");
+                    lienmultiple.setLayoutX(imageView.getX());
+                    lienmultiple.setLayoutY(imageView.getY());
+                    content.getChildren().add(lienmultiple);
+                    if (firstimageView.getAccessibleText().contains("pc")) {
+                        firstimageView.setImage(imagepcselected);
+                    } else if (firstimageView.getAccessibleText().contains("server")) {
+                        firstimageView.setImage(imageserverselected);
+                    } else if (firstimageView.getAccessibleText().contains("router")) {
+                        firstimageView.setImage(imagerouteurselected);
+                    } else if (firstimageView.getAccessibleText().contains("switch")) {
+                        firstimageView.setImage(imageswitchselected);
+                    } else if (firstimageView.getAccessibleText().contains("hub")) {
+                        firstimageView.setImage(imagehubselected);
+                    } else if (firstimageView.getAccessibleText().contains("wan")) {
+                        firstimageView.setImage(imagewanselected);
                     }
+
                 });
 
-                requestStage.getIcons().add(new Image("file:sprites/arjl-logo.png"));
 
-                arrayList_of_requestStage.add(requestStage);
+                MenuItem itemDeleteLink = new MenuItem("Delete Link(s)");
+                itemDeleteLink.setOnAction(event -> {
+                    reset("", status, content);
+                    ArrayList<ElementOfLink> list_element = new ArrayList<>();
 
-
-                Text textIP = new Text("IP");
-                textIP.setLayoutX(5);
-                textIP.setLayoutY(15);
-                requestPane.getChildren().add(textIP);
-
-                TextField textFieldIP = new TextField("");
-                textFieldIP.setLayoutY(30);
-                textFieldIP.setLayoutX(5);
-                textFieldIP.setPrefWidth(95);
-                requestPane.getChildren().add(textFieldIP);
-
-                Text textType = new Text("Type");
-                textType.setLayoutX(105);
-                textType.setLayoutY(15);
-                requestPane.getChildren().add(textType);
-
-                ChoiceBox choiceBox = new ChoiceBox(FXCollections.observableArrayList("FTP", "WEB"));
-                choiceBox.setLayoutX(105);
-                choiceBox.setLayoutY(30);
-                choiceBox.setPrefWidth(95);
-                requestPane.getChildren().add(choiceBox);
-
-
-                Text textTime = new Text("Time : ms");
-                textTime.setLayoutX(205);
-                textTime.setLayoutY(15);
-                requestPane.getChildren().add(textTime);
-
-                TextField textFieldTime = new TextField("");
-                textFieldTime.setLayoutY(30);
-                textFieldTime.setLayoutX(205);
-                textFieldTime.setPrefWidth(95);
-                requestPane.getChildren().add(textFieldTime);
-
-                Button okButton = new Button("OK");
-                okButton.setLayoutX(305);
-                okButton.setLayoutY(0);
-                requestPane.getChildren().add(okButton);
-
-                Button stopButton = new Button("STOP");
-                stopButton.setLayoutX(355);
-                stopButton.setLayoutY(0);
-                requestPane.getChildren().add(stopButton);
-
-                okButton.setOnAction(event -> {
-                    if(!bugmode) {
-                        if (choiceBox.getSelectionModel().selectedIndexProperty().intValue() == -1) {
-                            afficheError("Select a Type");
-                        } else if (choiceBox.getSelectionModel().selectedIndexProperty().intValue() == 0) {
-
-
-                            String string = textFieldIP.getText();
-
-                            IP ip = null;
-                            int time = 0;
-                            try {
-
-
-                                if(abstractClient.getConnectedLinks().get(0)==null) {
-                                    throw new NotYetConnectedException();
-                                }
-
-
-                                ip = IP.stringToIP(string);
-                                Integer integer = Integer.parseInt(textFieldTime.getText());
-                                time= integer.intValue();
-                                if(time<0) {
-                                    throw new NumberFormatException();
-                                }
-                                System.out.println("OK");
-                                abstractClient.setRepetitiveRequest(PacketTypes.FTP,ip,time);
-                                System.out.println("Launch");
-                            } catch (BadCallException e) {
-                                afficheError("Bad Request");
-
-                            } catch (NumberFormatException e) {
-                                afficheError("Temps invalide");
-                            } catch (NotYetConnectedException e) {
-                                afficheError("No Link Linked");
-                            }
-
-                        } else if (choiceBox.getSelectionModel().selectedIndexProperty().intValue() == 1) {
-                            String string = textFieldIP.getText();
-                            System.out.println(string);
-                            IP ip = null;
-                            int time = 0;
-                            try {
-
-                                if(abstractClient.getConnectedLinks().get(0)==null) {
-                                    throw new NotYetConnectedException();
-                                }
-
-                                ip = IP.stringToIP(string);
-                                Integer integer = Integer.parseInt(textFieldTime.getText());
-                                time= integer.intValue();
-                                if(time<0) {
-                                    throw new NumberFormatException();
-                                }
-                                abstractClient.setRepetitiveRequest(PacketTypes.WEB,ip,time);
-                            } catch (BadCallException e) {
-                                afficheError("Bad Request");
-
-                            } catch (NumberFormatException e) {
-                                afficheError("Temps invalide");
-                            } catch (NotYetConnectedException e) {
-                                afficheError("No Link Linked");
-                            }
+                    int n = array_list_of_link.size();
+                    for (int i = 0; i < n; ++i) {
+                        ElementOfLink element = array_list_of_link.get(i);
+                        if (element.img1 == imageView) {
+                            list_element.add(element);
                         }
+                        if (element.img2 == imageView) {
+                            list_element.add(element);
+                        }
+
                     }
+
+                    n = list_element.size();
+                    for (int i = 0; i < n; ++i) {
+                        try {
+                            Supress.suprimerLien(list_element.get(i).line, content, status);
+                        } catch (BadCallException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
                 });
 
-                stopButton.setOnAction(event -> {
-                    if(!bugmode){
-                        abstractClient.stopRepetitiveRequest();
-                    }
-                });
-
-                MenuItem itemRequest = new MenuItem("Repetitive Request");
-                itemRequest.setOnAction(event -> {
+                MenuItem itemCharge = new MenuItem("Show charges");
+                itemCharge.setOnAction(event -> {
                     reset("", status, content);
-                    if(!requestStage.isShowing()) {
-                        requestStage.show();
+                    progressBar.setLayoutX(imageView.getX());
+                    progressBar.setLayoutY(imageView.getY() + imageView.getImage().getHeight());
+                    progressBar.setPrefWidth(imageView.getImage().getWidth());
+                    progressBar.setPrefHeight(1);
+                    if (content.getChildren().contains(progressBar)) {
+                        content.getChildren().remove(progressBar);
                     } else {
-                        requestStage.toFront();
+                        content.getChildren().add(progressBar);
+                        progressBar.setProgress(0);
+
+                    }
+                });
+                MenuItem itemVerbose = new MenuItem("Activate Verbose");
+
+                itemVerbose.setOnAction(event -> {
+                    reset("", status, content);
+                    if (itemVerbose.getText().equals("Activate Verbose")) {
+                        itemVerbose.setText("Desactivate Verbose");
+                        isverboseactive.setText("Verbose : ON");
+                        array_list_of_devices.get(array_list_of_image.indexOf(imageView)).setVerbose();
+                        System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname
+                                + " : I am speaking to you");
+
+                    } else {
+                        itemVerbose.setText("Activate Verbose");
+                        isverboseactive.setText("Verbose : OFF");
+                        array_list_of_devices.get(array_list_of_image.indexOf(imageView)).stopVerbose();
+                        System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname
+                                + " : I will no longer speak to you");
                     }
 
 
                 });
+                contextMenu.getItems().addAll(itemOnOff, itemVerbose, itemCharge);
 
-                contextMenu.getItems().add(itemRequest);
-            }
+                if (device.contains("pc")) {
+                    MenuItem itemRequestA = new MenuItem("Request Progress");
+                    itemRequestA.setOnAction(event -> {
+                        reset("", status, content);
+                        progressBarRequest.setProgress(0);
+
+                        progressBarRequest.setPrefWidth(imageView.getImage().getWidth());
+
+                        if (content.getChildren().contains(progressBarRequest)) {
+                            content.getChildren().remove(progressBarRequest);
+                        } else {
+                            content.getChildren().add(progressBarRequest);
+                            progressBarRequest.setLayoutX(imageView.getX());
+                            progressBarRequest.setLayoutY(imageView.getY() - 13);
 
 
-            contextMenu.getItems().addAll(itemLink, itemMultipleLink, itemDeleteLink, itemDelete);
-
-
-            imageView.setOnContextMenuRequested(event -> {
-                if(!bugmode) {
-                    contextMenu.show(imageView, Side.BOTTOM, event.getX() - imageView.getX(), event.getY() - imageView.getY() - imageView.getImage().getHeight());
+                        }
+                    });
+                    contextMenu.getItems().add(itemRequestA);
                 }
-            });
 
 
 
-            imageView.setOnMousePressed(event -> {
-                if(!bugmode) {
-                    if (event.isPrimaryButtonDown()) {
-                        if (supressmode) {
+
+
+                if (device.contains("pc") | device.contains("server") | device.contains("router") | device.contains("wan") ) {
+                    contextMenu.getItems().addAll(itemConfig);
+                }
+                if (device.contains("switch")) {
+                    MenuItem itemCleanTable = new MenuItem("Clean Table");
+                    itemCleanTable.setOnAction(event -> {
+                        AbstractSwitch abstractSwitch = (AbstractSwitch) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                        abstractSwitch.resetTable();
+                        System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname + " : Table Cleared");
+                    });
+                    contextMenu.getItems().addAll(itemCleanTable);
+                }
+                if (device.contains("router") | device.contains("pc") | device.contains("server")) {
+                    MenuItem itemClearRoute = new MenuItem("Clear Route");
+                    itemClearRoute.setOnAction(event -> {
+                        AbstractRouter abstractRouter = (AbstractRouter) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                        abstractRouter.clearRoutes();
+                        System.out.println(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).nickname + " : Routes Cleared");
+                    });
+                    contextMenu.getItems().addAll(itemClearRoute);
+                }
+                if (device.contains("router")) {
+                    MenuItem itemRIP = new MenuItem("RIP");
+                    itemRIP.setOnAction(event -> {
+                        AbstractRouter abstractRouter = (AbstractRouter) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                        if(!abstractRouter.RIP) {
+                            abstractRouter.activateRIP();
+                            itemRIP.setText("RIP ✓");
+                        } else {
+                            abstractRouter.desactivateRIP();
+                            itemRIP.setText("RIP");
+                        }
+                    });
+                    contextMenu.getItems().addAll(itemRIP);
+                }
+
+
+                /*
+                    Menu DHCP
+                 */
+
+                Stage stageDHCP = new Stage();
+                arrayList_of_stageDHCP.add(stageDHCP);
+                if(device.contains("pc") |device.contains("server")) {
+
+
+                    AnchorPane dhcpPane = new AnchorPane();
+
+                    dhcpPane.setOnMouseClicked(event -> {
+
+                        if (DeviceManager.is_bugging()) {
+                            Toolkit.getDefaultToolkit().beep();
+                            DeviceManager.errorStage.toFront();
+                        }
+                    });
+
+                    Scene dhcpScene = new Scene(dhcpPane, 423, 60);
+                    stageDHCP.setTitle(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).getName() + " : " + device);
+                    stageDHCP.setScene(dhcpScene);
+                    stageDHCP.sizeToScene();
+
+                    stageDHCP.setOnCloseRequest(event -> {
+                        if (bugmode) {
+                            event.consume();
+                        }
+                    });
+
+                    stageDHCP.getIcons().add(new Image("file:sprites/arjl-logo.png"));
+
+                    Text dhcptext = new Text("DHCP Request PORT :");
+                    dhcptext.setLayoutX(5);
+                    dhcptext.setLayoutY(15);
+                    dhcpPane.getChildren().add(dhcptext);
+
+
+                    TextField fieldDHCP = new TextField("");
+
+
+                    fieldDHCP.setLayoutX(5);
+                    fieldDHCP.setLayoutY(30);
+
+                    dhcpPane.getChildren().add(fieldDHCP);
+
+
+                    Button validationButtonDHCP = new Button("OK");
+                    validationButtonDHCP.setLayoutY(30);
+                    validationButtonDHCP.setLayoutX(200);
+
+                    validationButtonDHCP.setOnAction(event ->{
+                        if(!DeviceManager.is_bugging()) {
+                            String string = fieldDHCP.getText();
 
                             try {
-                                imageView.setOnMouseExited(eventnull -> {
-                                    ;
-                                });
-                                enlevePopupConfiq(anchorPane,infoAnchorPane);
-                                suprimerImage(imageView, content);
+                                int port = Integer.parseInt(string);
+                                if(device.contains("pc")) {
+                                    AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                                    abstractClient.DHCPClient(port);
+                                } else {
+                                    AbstractServer abstractServer = (AbstractServer) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+                                    abstractServer.DHCPClient(port);
+                                }
+                                stageDHCP.close();
+
+                            } catch (NumberFormatException e) {
+
+                                afficheError("You are not from the INT, aren't you ?");
+                            } catch (OverflowException e) {
+                                e.printStackTrace();
                             } catch (BadCallException e) {
                                 e.printStackTrace();
                             }
+
+
                         }
-                        if (addlinkmode == 1) {
-                            if(firstimageView!=null) {
-                            if(firstimageView.equals(imageView)) {
+                    });
 
-                            }} else {
-                                entier = 0;
-                            }
-                            firstimageView = imageView;
-                            firstimagesizeX = imageView.getImage().getWidth();
-                            firstimagesizeY = imageView.getImage().getHeight();
-                            addlinkmode = 2;
+                    dhcpPane.getChildren().add(validationButtonDHCP);
 
-                            if(firstimageView.getAccessibleText().contains("pc")) {
-                                firstimageView.setImage(imagepcselected);
-                            } else if (firstimageView.getAccessibleText().contains("server")){
-                                firstimageView.setImage(imageserverselected);
-                            } else if (firstimageView.getAccessibleText().contains("router")){
-                                firstimageView.setImage(imagerouteurselected);
-                            } else if (firstimageView.getAccessibleText().contains("switch")){
-                                firstimageView.setImage(imageswitchselected);
-                            }
 
-                            status.setText("addLink 1");
-                        } else if (addlinkmode == 2) {
-                            if (firstimageView != imageView) {
-                                entier=0;
-                                secondimageView = imageView;
-                                secondimagesizeX = imageView.getImage().getWidth();
-                                secondimagesizeY = imageView.getImage().getHeight();
-                                addlinkmode = 3;
-                                status.setText("addLink 2");
+
+                    MenuItem itemDHCP = new MenuItem("DHCP Request");
+                    itemDHCP.setOnAction(event -> {
+                        reset("", status, content);
+                        if (!stageDHCP.isShowing()) {
+                            stageDHCP.show();
+                        } else {
+                            stageDHCP.toFront();
+                        }
+
+
+                    });
+
+                    contextMenu.getItems().add(itemDHCP);
+                }
+
+                /*
+                   Menu requete répétitive
+                */
+
+                Stage requestStage = new Stage();
+                arrayList_of_requestStage.add(requestStage);
+
+                if (device.contains("pc")) {
+                    AbstractClient abstractClient = (AbstractClient) array_list_of_devices.get(array_list_of_image.indexOf(imageView));
+
+
+                    AnchorPane requestPane = new AnchorPane();
+
+                    requestPane.setOnMouseClicked(event -> {
+
+                        if (DeviceManager.is_bugging()) {
+                            Toolkit.getDefaultToolkit().beep();
+                            DeviceManager.errorStage.toFront();
+                        }
+                    });
+
+                    Scene requestScene = new Scene(requestPane, 423, 60);
+                    requestStage.setTitle(array_list_of_devices.get(array_list_of_image.indexOf(imageView)).getName() + " : " + device);
+                    requestStage.setScene(requestScene);
+                    requestStage.sizeToScene();
+
+                    requestStage.setOnCloseRequest(event -> {
+                        if (bugmode) {
+                            event.consume();
+                        }
+                    });
+
+                    requestStage.getIcons().add(new Image("file:sprites/arjl-logo.png"));
+
+
+
+                    Text textIP = new Text("IP");
+                    textIP.setLayoutX(5);
+                    textIP.setLayoutY(15);
+                    requestPane.getChildren().add(textIP);
+
+                    TextField textFieldIP = new TextField("");
+                    textFieldIP.setLayoutY(30);
+                    textFieldIP.setLayoutX(5);
+                    textFieldIP.setPrefWidth(95);
+                    requestPane.getChildren().add(textFieldIP);
+
+                    Text textType = new Text("Type");
+                    textType.setLayoutX(105);
+                    textType.setLayoutY(15);
+                    requestPane.getChildren().add(textType);
+
+                    ChoiceBox choiceBox = new ChoiceBox(FXCollections.observableArrayList("FTP", "WEB"));
+                    choiceBox.setLayoutX(105);
+                    choiceBox.setLayoutY(30);
+                    choiceBox.setPrefWidth(95);
+                    requestPane.getChildren().add(choiceBox);
+
+
+                    Text textTime = new Text("Time : ms");
+                    textTime.setLayoutX(205);
+                    textTime.setLayoutY(15);
+                    requestPane.getChildren().add(textTime);
+
+                    TextField textFieldTime = new TextField("");
+                    textFieldTime.setLayoutY(30);
+                    textFieldTime.setLayoutX(205);
+                    textFieldTime.setPrefWidth(95);
+                    requestPane.getChildren().add(textFieldTime);
+
+                    Button okButton = new Button("OK");
+                    okButton.setLayoutX(305);
+                    okButton.setLayoutY(0);
+                    requestPane.getChildren().add(okButton);
+
+                    Button stopButton = new Button("STOP");
+                    stopButton.setLayoutX(355);
+                    stopButton.setLayoutY(0);
+                    requestPane.getChildren().add(stopButton);
+
+                    okButton.setOnAction(event -> {
+                        if (!bugmode) {
+                            if (choiceBox.getSelectionModel().selectedIndexProperty().intValue() == -1) {
+                                afficheError("Select a Type");
+                            } else if (choiceBox.getSelectionModel().selectedIndexProperty().intValue() == 0) {
+
+
+                                String string = textFieldIP.getText();
+
+                                IP ip = null;
+                                int time = 0;
                                 try {
-                                    addlink(content, status, anchorPane);
+
+
+                                    if (abstractClient.getConnectedLinks().get(0) == null) {
+                                        throw new NotYetConnectedException();
+                                    }
+
+
+                                    ip = IP.stringToIP(string);
+                                    Integer integer = Integer.parseInt(textFieldTime.getText());
+                                    time = integer.intValue();
+                                    if (time < 0) {
+                                        throw new NumberFormatException();
+                                    }
+                                    System.out.println("OK");
+                                    abstractClient.setRepetitiveRequest(PacketTypes.FTP, ip, time);
+                                    System.out.println("Launch");
+                                } catch (BadCallException e) {
+                                    afficheError("Bad Request");
+
+                                } catch (NumberFormatException e) {
+                                    afficheError("Temps invalide");
+                                } catch (NotYetConnectedException e) {
+                                    afficheError("No Link Linked");
+                                }
+
+                            } else if (choiceBox.getSelectionModel().selectedIndexProperty().intValue() == 1) {
+                                String string = textFieldIP.getText();
+
+                                IP ip = null;
+                                int time = 0;
+                                try {
+
+                                    if (abstractClient.getConnectedLinks().get(0) == null) {
+                                        throw new NotYetConnectedException();
+                                    }
+
+                                    ip = IP.stringToIP(string);
+                                    Integer integer = Integer.parseInt(textFieldTime.getText());
+                                    time = integer.intValue();
+                                    if (time < 0) {
+                                        throw new NumberFormatException();
+                                    }
+                                    abstractClient.setRepetitiveRequest(PacketTypes.WEB, ip, time);
+                                } catch (BadCallException e) {
+                                    afficheError("Bad Request");
+
+                                } catch (NumberFormatException e) {
+                                    afficheError("Temps invalide");
+                                } catch (NotYetConnectedException e) {
+                                    afficheError("No Link Linked");
+                                }
+                            }
+                        }
+                    });
+
+                    stopButton.setOnAction(event -> {
+                        if (!bugmode) {
+                            abstractClient.stopRepetitiveRequest();
+                        }
+                    });
+
+                    MenuItem itemRequest = new MenuItem("Repetitive Request");
+                    itemRequest.setOnAction(event -> {
+                        reset("", status, content);
+                        if (!requestStage.isShowing()) {
+                            requestStage.show();
+                        } else {
+                            requestStage.toFront();
+                        }
+
+
+                    });
+
+                    contextMenu.getItems().add(itemRequest);
+                }
+
+
+
+
+                contextMenu.getItems().addAll(itemLink, itemMultipleLink, itemDeleteLink, itemDelete);
+
+
+                imageView.setOnContextMenuRequested(event -> {
+                    if (!bugmode) {
+                        contextMenu.show(imageView, Side.BOTTOM, event.getX() - imageView.getX(), event.getY() - imageView.getY() - imageView.getImage().getHeight());
+                    }
+                });
+
+
+                imageView.setOnMousePressed(event -> {
+                    if (!bugmode) {
+                        if (event.isPrimaryButtonDown()) {
+                            if (supressmode) {
+
+                                try {
+                                    imageView.setOnMouseExited(eventnull -> {
+                                        ;
+                                    });
+                                    enlevePopupConfiq(anchorPane, infoAnchorPane);
+                                    Supress.suprimerImage(imageView, content);
                                 } catch (BadCallException e) {
                                     e.printStackTrace();
                                 }
+                            }
+                            if (addlinkmode == 1) {
+                                if (firstimageView != null) {
+                                    if (firstimageView.equals(imageView)) {
 
-                                if(firstimageView.getAccessibleText().contains("pc")) {
-                                    firstimageView.setImage(imagepc);
-                                } else if (firstimageView.getAccessibleText().contains("server")){
-                                    firstimageView.setImage(imageserver);
-                                } else if (firstimageView.getAccessibleText().contains("router")){
-                                    firstimageView.setImage(imagerouteur);
-                                } else if (firstimageView.getAccessibleText().contains("switch")){
-                                    firstimageView.setImage(imageswitch);
+                                    } else {
+                                        entier = 0;
+                                    }
+                                }
+                                firstimageView = imageView;
+                                firstimagesizeX = imageView.getImage().getWidth();
+                                firstimagesizeY = imageView.getImage().getHeight();
+                                addlinkmode = 2;
+
+                                if (firstimageView.getAccessibleText().contains("pc")) {
+                                    firstimageView.setImage(imagepcselected);
+                                } else if (firstimageView.getAccessibleText().contains("server")) {
+                                    firstimageView.setImage(imageserverselected);
+                                } else if (firstimageView.getAccessibleText().contains("router")) {
+                                    firstimageView.setImage(imagerouteurselected);
+                                } else if (firstimageView.getAccessibleText().contains("switch")) {
+                                    firstimageView.setImage(imageswitchselected);
+                                } else if (firstimageView.getAccessibleText().contains("hub")) {
+                                    firstimageView.setImage(imagehubselected);
+                                } else if (firstimageView.getAccessibleText().contains("wan")) {
+                                    firstimageView.setImage(imagewanselected);
                                 }
 
-                            } else {
-                                entier++;
-                                if (entier == 9) {
+                                status.setText("addLink 1");
+                            } else if (addlinkmode == 2) {
+                                if (firstimageView != imageView) {
+                                    entier = 0;
+                                    secondimageView = imageView;
+                                    secondimagesizeX = imageView.getImage().getWidth();
+                                    secondimagesizeY = imageView.getImage().getHeight();
+                                    addlinkmode = 3;
+                                    status.setText("addLink 2");
+                                    try {
+                                        AddLink.addlink(content, status, anchorPane);
+                                    } catch (BadCallException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    if (firstimageView.getAccessibleText().contains("pc")) {
+                                        firstimageView.setImage(imagepc);
+                                    } else if (firstimageView.getAccessibleText().contains("server")) {
+                                        firstimageView.setImage(imageserver);
+                                    } else if (firstimageView.getAccessibleText().contains("router")) {
+                                        firstimageView.setImage(imagerouteur);
+                                    } else if (firstimageView.getAccessibleText().contains("switch")) {
+                                        firstimageView.setImage(imageswitch);
+                                    } else if (firstimageView.getAccessibleText().contains("hub")) {
+                                        firstimageView.setImage(imagehub);
+                                    } else if (firstimageView.getAccessibleText().contains("wan")) {
+                                        firstimageView.setImage(imagewan);
+                                    }
+
+                                } else {
+                                    entier++;
+                                    if (entier == 9) {
 
 
-                                    updateLinkDrag(imageView);
+                                        Actualization.updateLinkDrag(imageView);
 
-                                    reset("",status,content);
+                                        reset("", status, content);
 
-                                    afficheError("it's OVER 9000 !!!!!");
-                                    Media media = new Media(new File("video/9000.mp4").toURI().toASCIIString());
-                                    MediaPlayer player = new MediaPlayer(media);
-                                    player.setAutoPlay(true);
+                                        afficheError("it's OVER 9000 !!!!!");
 
-                                    MediaView mediaView = new MediaView(player);
-
-
-                                    anchorPane.getChildren().add(mediaView);
-
-
-                                    mediaView.setLayoutX(0);
-                                    mediaView.setLayoutY(scrollPane.getLayoutY());
-                                    player.setOnEndOfMedia(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            // actions here e.g.:
-                                            anchorPane.getChildren().remove(mediaView);
-                                        }
-                                    });
-                                    imageView.setImage(imagepipeau);
-                                    updateInfoEtBarre();
-
-
-                                }
-                                if (entier > 9) {
-                                    int a = entier;
-                                    if (a<14) {
-                                        Media media = new Media(new File("video/video" + a + ".mp4").toURI().toASCIIString());
+                                        imageView.setImage(imagepipeau);
+                                        Actualization.updateInfoEtBarre();
+                                        Media media = new Media(new File("video/9000.mp4").toURI().toASCIIString());
                                         MediaPlayer player = new MediaPlayer(media);
                                         player.setAutoPlay(true);
 
                                         MediaView mediaView = new MediaView(player);
 
-                                        primaryStage.setFullScreen(true);
-
-
-                                        Image black = new Image("file:sprites/Noir.jpg");
-                                        ImageView imageViewBlack = new ImageView(black);
-                                        anchorPane.getChildren().add(imageViewBlack);
 
                                         anchorPane.getChildren().add(mediaView);
 
 
-                                        mediaView.setFitHeight(primaryStage.getHeight());
-
-
                                         mediaView.setLayoutX(0);
-                                        mediaView.setLayoutY(0);
-
-
+                                        mediaView.setLayoutY(scrollPane.getLayoutY());
                                         player.setOnEndOfMedia(new Runnable() {
                                             @Override
                                             public void run() {
                                                 // actions here e.g.:
                                                 anchorPane.getChildren().remove(mediaView);
-                                                anchorPane.getChildren().remove(imageViewBlack);
-                                                primaryStage.setFullScreen(false);
-
                                             }
                                         });
+
+
+                                    }
+                                    if (entier > 9) {
+                                        int a = entier;
+                                        if (a < 14) {
+                                            Media media = new Media(new File("video/video" + a + ".mp4").toURI().toASCIIString());
+                                            MediaPlayer player = new MediaPlayer(media);
+                                            player.setAutoPlay(true);
+
+                                            MediaView mediaView = new MediaView(player);
+
+                                            primaryStage.setFullScreen(true);
+
+
+                                            Image black = new Image("file:sprites/Noir.jpg");
+                                            ImageView imageViewBlack = new ImageView(black);
+                                            anchorPane.getChildren().add(imageViewBlack);
+
+                                            anchorPane.getChildren().add(mediaView);
+
+
+                                            mediaView.setFitHeight(primaryStage.getHeight());
+
+
+                                            mediaView.setLayoutX(0);
+                                            mediaView.setLayoutY(0);
+
+
+                                            player.setOnEndOfMedia(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    // actions here e.g.:
+                                                    anchorPane.getChildren().remove(mediaView);
+                                                    anchorPane.getChildren().remove(imageViewBlack);
+                                                    primaryStage.setFullScreen(false);
+
+                                                }
+                                            });
+                                        }
+
                                     }
 
                                 }
-                            }
 
-                        } else if (addlinkmode == 4) {
-                            if (firstimageView != imageView) {
+                            } else if (addlinkmode == 4) {
+                                if (firstimageView != imageView) {
 
-                                secondimageView = imageView;
-                                secondimagesizeX = imageView.getImage().getWidth();
-                                secondimagesizeY = imageView.getImage().getHeight();
-                                addlinkmode = 3;
-                                status.setText("addLink 2");
-                                try {
-                                    addlink(content, status, anchorPane);
-                                } catch (BadCallException e) {
-                                    e.printStackTrace();
+                                    secondimageView = imageView;
+                                    secondimagesizeX = imageView.getImage().getWidth();
+                                    secondimagesizeY = imageView.getImage().getHeight();
+                                    addlinkmode = 3;
+                                    status.setText("addLink 2");
+                                    try {
+                                        AddLink.addlink(content, status, anchorPane);
+                                    } catch (BadCallException e) {
+                                        e.printStackTrace();
+                                    }
+                                    reset("", status, content);
+                                    addlinkmode = 5;
+                                    if (firstimageView.getAccessibleText().contains("pc")) {
+                                        firstimageView.setImage(imagepc);
+                                    } else if (firstimageView.getAccessibleText().contains("server")) {
+                                        firstimageView.setImage(imageserver);
+                                    } else if (firstimageView.getAccessibleText().contains("router")) {
+                                        firstimageView.setImage(imagerouteur);
+                                    } else if (firstimageView.getAccessibleText().contains("switch")) {
+                                        firstimageView.setImage(imageswitch);
+                                    } else if (firstimageView.getAccessibleText().contains("hub")) {
+                                        firstimageView.setImage(imagehub);
+                                    } else if (firstimageView.getAccessibleText().contains("wan")) {
+                                        firstimageView.setImage(imagewan);
+                                    }
                                 }
-                                reset("", status, content);
-                                addlinkmode = 5;
-                                if(firstimageView.getAccessibleText().contains("pc")) {
-                                    firstimageView.setImage(imagepc);
-                                } else if (firstimageView.getAccessibleText().contains("server")){
-                                    firstimageView.setImage(imageserver);
-                                } else if (firstimageView.getAccessibleText().contains("router")){
-                                    firstimageView.setImage(imagerouteur);
-                                } else if (firstimageView.getAccessibleText().contains("switch")){
-                                    firstimageView.setImage(imageswitch);
+
+                            } else if (addlinkmode == 5) {
+                                addlinkmode = 0;
+
+                            } else if (addlinkmode == 6) {
+                                if (firstimageView != imageView) {
+                                    secondimageView = imageView;
+                                    secondimagesizeX = imageView.getImage().getWidth();
+                                    secondimagesizeY = imageView.getImage().getHeight();
+
+                                    try {
+                                        AddLink.addlink(content, status, anchorPane);
+                                    } catch (BadCallException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    addlinkmode = 6;
+                                    lienmultiple.toFront();
                                 }
-                            }
 
-                        } else if (addlinkmode == 5) {
-                            addlinkmode = 0;
+                            } else if (addlinkmode == 7) {
 
-                        } else if (addlinkmode == 6) {
-                            if (firstimageView != imageView) {
-                                secondimageView = imageView;
-                                secondimagesizeX = imageView.getImage().getWidth();
-                                secondimagesizeY = imageView.getImage().getHeight();
+                                firstimageView = imageView;
+                                firstimagesizeX = imageView.getImage().getWidth();
+                                firstimagesizeY = imageView.getImage().getHeight();
 
-                                try {
-                                    addlink(content, status, anchorPane);
-                                } catch (BadCallException e) {
-                                    e.printStackTrace();
-                                }
 
                                 addlinkmode = 6;
-                                lienmultiple.toFront();
+                                lienmultiple.setLayoutX(imageView.getX());
+                                lienmultiple.setLayoutY(imageView.getY());
+                                content.getChildren().add(lienmultiple);
+                                if (firstimageView.getAccessibleText().contains("pc")) {
+                                    firstimageView.setImage(imagepcselected);
+                                } else if (firstimageView.getAccessibleText().contains("server")) {
+                                    firstimageView.setImage(imageserverselected);
+                                } else if (firstimageView.getAccessibleText().contains("router")) {
+                                    firstimageView.setImage(imagerouteurselected);
+                                } else if (firstimageView.getAccessibleText().contains("switch")) {
+                                    firstimageView.setImage(imageswitchselected);
+                                } else if (firstimageView.getAccessibleText().contains("hub")) {
+                                    firstimageView.setImage(imagehubselected);
+                                } else if (firstimageView.getAccessibleText().contains("wan")) {
+                                    firstimageView.setImage(imagewanselected);
+                                }
+
+
                             }
-
-                        } else if (addlinkmode == 7) {
-
-                            firstimageView = imageView;
-                            firstimagesizeX = imageView.getImage().getWidth();
-                            firstimagesizeY = imageView.getImage().getHeight();
-
-
-
-                            addlinkmode = 6;
-                            lienmultiple.setLayoutX(imageView.getX());
-                            lienmultiple.setLayoutY(imageView.getY());
-                            content.getChildren().add(lienmultiple);
-                            if(firstimageView.getAccessibleText().contains("pc")) {
-                                firstimageView.setImage(imagepcselected);
-                            } else if (firstimageView.getAccessibleText().contains("server")){
-                                firstimageView.setImage(imageserverselected);
-                            } else if (firstimageView.getAccessibleText().contains("router")){
-                                firstimageView.setImage(imagerouteurselected);
-                            } else if (firstimageView.getAccessibleText().contains("switch")){
-                                firstimageView.setImage(imageswitchselected);
-                            }
-
-
+                        }
                     }
-                    }
-                }
-            });
+                });
 
 
 
@@ -2872,79 +2231,101 @@ public class DeviceManager {
         /*
             L'image selectionnée mise au premier plan
          */
-            imageView.setOnDragDetected(event -> {
-                if (event.isPrimaryButtonDown()) {
-                    imageView.toFront();
-                    infoAnchorPane.toFront();
-                    lienmultiple.toFront();
+                imageView.setOnDragDetected(event -> {
+                    if (event.isPrimaryButtonDown()) {
+                        imageView.toFront();
+                        imageViewError.toFront();
+                        infoAnchorPane.toFront();
+                        lienmultiple.toFront();
 
-                }
-            });
+                    }
+                });
 
-            imageView.setOnMouseDragged(event -> {
+                imageView.setOnMouseDragged(event -> {
 
-                if (!supressmode && addlinkmode == 0 && event.isPrimaryButtonDown() && !bugmode) {
+                    if (!supressmode && addlinkmode == 0 && event.isPrimaryButtonDown() && !bugmode) {
 
             /*
                 position de la souris
              */
-                    double x = event.getSceneX();
-                    double y = event.getSceneY() - scrollPane.getLayoutY();
+                        double x = event.getSceneX();
+                        double y = event.getSceneY() - scrollPane.getLayoutY();
 
 
 
             /*
                 Récupération de la position rélative du scrollbar par raport à la fenetre
              */
-                    double difx = content.getWidth() - anchorPane.getWidth() + 10;
-                    double relx = scrollPane.getHvalue() * difx;
-                    double dify = content.getHeight() - anchorPane.getHeight() + scrollPane.getLayoutY() + 10;
-                    double rely = scrollPane.getVvalue() * dify;
+                        double difx = content.getWidth() - anchorPane.getWidth() + 10;
+                        double relx = scrollPane.getHvalue() * difx;
+                        double dify = content.getHeight() - anchorPane.getHeight() + scrollPane.getLayoutY() + 10;
+                        double rely = scrollPane.getVvalue() * dify;
 
 
             /*
                 Correction pour ne pas sortir par la gauche et en haut.
              */
-                    if (x < (imageView.getImage().getWidth() / 2)) {
-                        x = (imageView.getImage().getWidth() / 2);
-                    }
-                    if (y < (imageView.getImage().getHeight() / 2)) {
-                        y = (imageView.getImage().getHeight() / 2);
-                    }
+                        if (x < (imageView.getImage().getWidth() / 2)) {
+                            x = (imageView.getImage().getWidth() / 2);
+                        }
+                        if (y < (imageView.getImage().getHeight() / 2)) {
+                            y = (imageView.getImage().getHeight() / 2);
+                        }
 
             /*
                 Correction pour ne pas sortir par la droite et en bas
              */
-                    double mx = anchorPane.getWidth();
-                    double my = anchorPane.getHeight() - scrollPane.getLayoutY();
-                    if (x > mx - imageView.getImage().getWidth() / 2 - 10) {
-                        x = mx - imageView.getImage().getWidth() / 2 - 10;
-                    }
-                    if (y > my - imageView.getImage().getHeight() / 2 - 10) {
-                        y = my - imageView.getImage().getHeight() / 2 - 10;
-                    }
+                        double mx = anchorPane.getWidth();
+                        double my = anchorPane.getHeight() - scrollPane.getLayoutY();
+                        if (x > mx - imageView.getImage().getWidth() / 2 - 10) {
+                            x = mx - imageView.getImage().getWidth() / 2 - 10;
+                        }
+                        if (y > my - imageView.getImage().getHeight() / 2 - 10) {
+                            y = my - imageView.getImage().getHeight() / 2 - 10;
+                        }
 
             /*
                 Relocation de l'image
              */
 
-                    imageView.setX(x - imageView.getImage().getWidth() / 2 + relx);
-                    imageView.setY(y - imageView.getImage().getHeight() / 2 + rely);
-                    infoAnchorPane.setLayoutX(imageView.getX() + imageView.getImage().getWidth());
-                    infoAnchorPane.setLayoutY(imageView.getY());
-                    progressBar.setLayoutX(imageView.getX());
-                    progressBar.setLayoutY(imageView.getY() + imageView.getImage().getHeight());
-                    progressBarRequest.setLayoutX(imageView.getX());
-                    progressBarRequest.setLayoutY(imageView.getY() - 13);
+                        imageView.setX(x - imageView.getImage().getWidth() / 2 + relx);
+                        imageView.setY(y - imageView.getImage().getHeight() / 2 + rely);
+                        infoAnchorPane.setLayoutX(imageView.getX() + imageView.getImage().getWidth());
+                        infoAnchorPane.setLayoutY(imageView.getY());
+                        progressBar.setLayoutX(imageView.getX());
+                        progressBar.setLayoutY(imageView.getY() + imageView.getImage().getHeight());
+                        progressBarRequest.setLayoutX(imageView.getX());
+                        progressBarRequest.setLayoutY(imageView.getY() - 13);
+                        int index = array_list_of_image.indexOf(imageView);
+                        arrayListOfX.set(index, imageView.getX() / zoomScale);
+                        arrayListOfY.set(index, imageView.getY() / zoomScale);
 
             /*
                 Actualisation des liens
              */
-                    updateLinkDrag(imageView);
-                }
-            });
+                        Actualization.updateLinkDrag(imageView);
+                    }
+                });
+                createmode = false;
 
-            createmode=false;
+            } else {
+                int index = array_list_of_image.indexOf(imageView);
+                content.getChildren().remove(imageView);
+                array_list_of_image.remove(index);
+                content.getChildren().remove(imageViewError);
+                arrayList_of_error.remove(index);
+                arrayListOfStateError.remove(index);
+                WAN=1;
+                createmode = false;
+
+                if(loadmode) {
+                    afficheError("Corrupted Save");
+                } else {
+                    afficheError("Only 1 WAN PORT allowed");
+                }
+
+            }
+
         }
 
 

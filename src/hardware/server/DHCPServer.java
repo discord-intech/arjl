@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package hardware.server;
 
 import enums.Bandwidth;
@@ -27,7 +49,7 @@ public class DHCPServer extends AbstractServer
     /**
      * La liste des transactions en cours, repérées par leur identifiant
      */
-    private ArrayList<Integer> identifiers = new ArrayList<>();
+    public ArrayList<Integer> identifiers = new ArrayList<>();
 
     /**
      * La table d'adressage
@@ -65,6 +87,7 @@ public class DHCPServer extends AbstractServer
                p.src_addr = this.IP;
                p.dst_mac = p.src_mac;
                p.src_mac = this.MAC;
+               p.isResponse = true;
                send(p, p.lastPort);
             }
         }
@@ -75,13 +98,16 @@ public class DHCPServer extends AbstractServer
             ArrayList<IP> firstrelay = ((DHCPData)p.getData()).getSubnetInfo();
             IP[] range;
             if(firstrelay.get(1) != null)
+            {
                 range = DHCPtable.gimmeARange(firstrelay.get(0).getSubnet(firstrelay.get(1)));
+            }
             else
             {
-                range = DHCPtable.gimmeARange(new IP(0,0,0,0)); //TODO TEMPORAIRE !!
+                range = DHCPtable.gimmeARange(this.IPinterfaces.get(p.lastPort).getSubnet(this.MasksInterfaces.get(p.lastPort)));
                 ((DHCPData)p.getData()).setDHCPaddr(this.IP);
+                ((DHCPData)p.getData()).setSubnetInfo(this.getGateway(), this.MasksInterfaces.get(p.lastPort));
             }
-            if(range[0].equals(new IP(0,0,0,0)) && range[0].equals(new IP(0,0,0,0))) //Pas de plage associée à ce sous-réseau
+            if(range[0].equals(new IP(0,0,0,0))) //Pas de plage associée à ce sous-réseau
                 return;
             ArrayList<IP> avail = new ArrayList<>();
             ArrayList<IP> subnetIPs = new ArrayList<>();
@@ -101,7 +127,9 @@ public class DHCPServer extends AbstractServer
             else
                 p.dst_addr = new IP(255,255,255,255);
             p.isResponse = true;
-            this.send(p, p.lastPort);
+            p.dst_mac = -1;
+            //this.send(p, p.lastPort);
+            this.stack.add(p);
             this.identifiers.add(((DHCPData) p.getData()).identifier);
         }
         //Si c'est l'ACK d'une machine
@@ -133,6 +161,9 @@ public class DHCPServer extends AbstractServer
         this.DHCPtable.setAllRanges(ranges);
     }
 
+    /**
+     * Renvoie les plages DHCP
+     */
     public ArrayList<ArrayList<IP>> getAllRanges()
     {
         return this.DHCPtable.getAllRanges();

@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package hardware.client;
 
 import enums.Bandwidth;
@@ -54,7 +76,7 @@ public abstract class AbstractClient extends AbstractRouter
      */
     public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC,
                           IP IP, IP default_gateway, ClockSpeed speed) throws BadCallException {
-        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(){{add(IP);}},
+        super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}}, new ArrayList<IP>(){{add(IP);}}, new ArrayList<IP>(){{add(new IP(0,0,0,0));}},
                 default_gateway, 0, speed);
         this.IP = IP;
         this.MAC = MAC;
@@ -70,7 +92,7 @@ public abstract class AbstractClient extends AbstractRouter
      */
     public AbstractClient(LinkTypes port_type, Bandwidth port_bandwidth, int overflow, int MAC, ClockSpeed speed) throws BadCallException {
         super(new ArrayList<LinkTypes>(){{add(port_type);}}, new ArrayList<Bandwidth>(){{add(port_bandwidth);}}, overflow, new ArrayList<Integer>(){{add(MAC);}},
-                new ArrayList<IP>(){{add(null);}}, speed);
+                new ArrayList<IP>(){{add(null);}}, new ArrayList<IP>(){{add(null);}}, speed);
         this.MAC = MAC;
     }
 

@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package actions;
 
 import exceptions.BadCallException;
@@ -8,6 +30,7 @@ import hardware.hub.Standard24ETHHub;
 import hardware.router.Cisco2811Router;
 import hardware.router.CiscoCRS1Router;
 import hardware.router.Standard2ETHRouter;
+import hardware.router.WANPort;
 import hardware.server.DHCPServer;
 import hardware.server.StandardFTPServer;
 import hardware.server.StandardWEBServer;
@@ -98,7 +121,9 @@ public class HardwareFactory implements Serializable
                 macCount += 2;
             }}, new ArrayList<IP>() {{
                 for (int i = 0; i < 2; i++) add(new IP(0, 0, 0, 0));
-            }}, new IP(0, 0, 0, 0), 0);
+            }}, new IP(0, 0, 0, 0),new ArrayList<IP>() {{
+                for (int i = 0; i < 2; i++) add(new IP(0, 0, 0, 0));
+            }}, 0);
         }
     }
     public CiscoCRS1Router newCiscoCRS1Router() throws BadCallException
@@ -108,6 +133,8 @@ public class HardwareFactory implements Serializable
             return new CiscoCRS1Router(new ArrayList<Integer>() {{
                 for (int i = 0; i < 12; i++) add(macCount + i);
                 macCount += 12;
+            }}, new ArrayList<IP>() {{
+                for (int i = 0; i < 12; i++) add(new IP(0, 0, 0, 0));
             }}, new ArrayList<IP>() {{
                 for (int i = 0; i < 12; i++) add(new IP(0, 0, 0, 0));
             }}, new IP(0, 0, 0, 0), 0);
@@ -123,9 +150,21 @@ public class HardwareFactory implements Serializable
                 macCount += 3;
             }}, new ArrayList<IP>() {{
                 for (int i = 0; i < 3; i++) add(new IP(0, 0, 0, 0));
+            }}, new ArrayList<IP>() {{
+                for (int i = 0; i < 3; i++) add(new IP(0, 0, 0, 0));
             }}, new IP(0, 0, 0, 0), 0);
         }
     }
+
+    public WANPort newWANPort() throws BadCallException
+    {
+        synchronized (lock)
+        {
+            macCount += 1;
+            return new WANPort((macCount-1), new IP(0,0,0,0), new IP(0,0,0,0));
+        }
+    }
+
     //===========================================
     // Constructeurs de CLIENT
     //===========================================

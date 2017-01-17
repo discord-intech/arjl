@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package graphics.JeNeSuisPasLa;
 
 import javafx.scene.control.Menu;
@@ -22,12 +44,74 @@ import java.io.File;
  *
  * private static int entier=0;
  */
+/*
+if (entier > 9) {
+                                        int a = entier;
+                                        if (a < 14) {
+                                            Media media = new Media(new File("video/video" + a + ".mp4").toURI().toASCIIString());
+                                            MediaPlayer player = new MediaPlayer(media);
+                                            player.setAutoPlay(true);
 
+                                            MediaView mediaView = new MediaView(player);
+
+                                            primaryStage.setFullScreen(true);
+
+
+                                            Image black = new Image("file:sprites/Noir.jpg");
+                                            ImageView imageViewBlack = new ImageView(black);
+                                            anchorPane.getChildren().add(imageViewBlack);
+
+                                            anchorPane.getChildren().add(mediaView);
+
+
+                                            mediaView.setFitHeight(primaryStage.getHeight());
+
+
+                                            mediaView.setLayoutX(0);
+                                            mediaView.setLayoutY(0);
+
+
+                                            player.setOnEndOfMedia(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    // actions here e.g.:
+                                                    anchorPane.getChildren().remove(mediaView);
+                                                    anchorPane.getChildren().remove(imageViewBlack);
+                                                    primaryStage.setFullScreen(false);
+
+                                                }
+                                            });
+                                        }
+
+                                    }
+ */
+
+    /*
+    Media media = new Media(new File("video/9000.mp4").toURI().toASCIIString());
+                                        MediaPlayer player = new MediaPlayer(media);
+                                        player.setAutoPlay(true);
+
+                                        MediaView mediaView = new MediaView(player);
+
+
+                                        anchorPane.getChildren().add(mediaView);
+
+
+                                        mediaView.setLayoutX(0);
+                                        mediaView.setLayoutY(scrollPane.getLayoutY());
+                                        player.setOnEndOfMedia(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                // actions here e.g.:
+                                                anchorPane.getChildren().remove(mediaView);
+                                            }
+                                        });
+     */
 
 public class Chat {
 
     public void Lapin(Stage primaryStage, AnchorPane anchorPane, Menu filemenu) {
-        MenuItem nePasCliquerButton = new MenuItem("La maman de Aymeric");
+        MenuItem nePasCliquerButton = new MenuItem("Ne pas cliquer");
         nePasCliquerButton.setMnemonicParsing(false);
         filemenu.getItems().add(nePasCliquerButton);
 

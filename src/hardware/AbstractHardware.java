@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package hardware;
 
 
@@ -8,8 +30,12 @@ import enums.LinkTypes;
 import exceptions.BadCallException;
 import exceptions.NoFreePortsException;
 import exceptions.OverflowException;
-import graphics.ErrorThread;
+import graphics.DeviceManager;
 import hardware.client.AbstractClient;
+import hardware.router.AbstractRouter;
+import hardware.router.WANPort;
+import hardware.server.AbstractServer;
+import javafx.application.Platform;
 import packet.Packet;
 
 import java.io.Serializable;
@@ -130,6 +156,7 @@ public abstract class AbstractHardware extends Thread implements Serializable {
     @Override
     public void run()
     {
+        long time = System.currentTimeMillis();
         while(true)
         {
             try
@@ -139,9 +166,36 @@ public abstract class AbstractHardware extends Thread implements Serializable {
 
                 if(this instanceof AbstractClient)
                 {
-                    if(((AbstractClient)this).timeoutCheck() && isVerbose)
-                        System.out.println(nickname+" : TIMEOUT !!");
+                    if(((AbstractClient)this).timeoutCheck() && isVerbose) {
+                        System.out.println(nickname + " : TIMEOUT !!");
+
+
+
+                        if(DeviceManager.graphic) {
+                            Platform.runLater ( () -> {
+                                ArrayList<AbstractHardware> abstractHardwareArrayList = DeviceManager.getArray_list_of_devices();
+                                ArrayList<Integer> arrayListOfStateError = DeviceManager.getArrayListOfStateError();
+
+
+                                arrayListOfStateError.set(abstractHardwareArrayList.indexOf(this), new Integer(1000));
+                            });
+                        }
+
+
+                    }
+
                 }
+
+                if(this instanceof AbstractRouter && ((AbstractRouter)this).RIP && !(this instanceof AbstractServer || this instanceof AbstractClient || this instanceof WANPort))
+                {
+                    //TODO RIPv2
+                    if(System.currentTimeMillis() - time >= 30000)
+                    {
+                        ((AbstractRouter)this).sendRoutingTable();
+                        time = System.currentTimeMillis();
+                    }
+                }
+
                 //Boucle d'attente pour simuler la vitesse de traitement (infinie si appareil est éteint)
                 do
                 {
@@ -152,10 +206,16 @@ public abstract class AbstractHardware extends Thread implements Serializable {
                 e.printStackTrace();
             } catch (OverflowException|BadCallException e)
             {
-                //TODO balancer l'info à l'interface graphique
+                if(DeviceManager.graphic)
+                {
+                    Platform.runLater ( () -> {
+                        ArrayList<AbstractHardware> abstractHardwareArrayList = DeviceManager.getArray_list_of_devices();
+                        ArrayList<Integer> arrayListOfStateError = DeviceManager.getArrayListOfStateError();
 
-                ErrorThread errorThread = new ErrorThread(this);
-                errorThread.run();
+
+                        arrayListOfStateError.set(abstractHardwareArrayList.indexOf(this), new Integer(1000));
+                    });
+                }
 
             }
 

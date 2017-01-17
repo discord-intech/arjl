@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package hardware.router;
 
 
@@ -36,6 +58,8 @@ public abstract class AbstractRouter extends AbstractHardware
     protected ArrayList<Integer> MACinterfaces;
     /** Les IPs des interfaces */
     protected ArrayList<IP> IPinterfaces;
+    /** Les MACs des interfaces */
+    protected ArrayList<IP> MasksInterfaces;
     /** Si ce routeur est un relai DHCP */
     protected boolean isDHCPRelay = false;
     /** L'addresse du serveur DHCP vers lequel relayer */
@@ -55,6 +79,8 @@ public abstract class AbstractRouter extends AbstractHardware
     protected IP IP;
     /** Si la machine attends une IP par DHCP  */
     protected boolean[] awaitingForIP;
+    /** Si le protocole RIP est activé */
+    public boolean RIP = false;
 
     /**
      * Constructeur classique
@@ -68,10 +94,11 @@ public abstract class AbstractRouter extends AbstractHardware
      */
     public AbstractRouter(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth,
                           int overflow, ArrayList<Integer> MACinterfaces,
-                          ArrayList<IP> IPinterfaces, IP default_gateway, int default_port, ClockSpeed speed) throws BadCallException {
+                          ArrayList<IP> IPinterfaces, ArrayList<IP> MasksInterfaces, IP default_gateway, int default_port, ClockSpeed speed) throws BadCallException {
         super(port_types, port_bandwidth, overflow, speed);
         this.MACinterfaces = MACinterfaces;
         this.IPinterfaces = IPinterfaces;
+        this.MasksInterfaces = MasksInterfaces;
         this.routingTable = new RoutingTable(default_port, default_gateway);
         this.awaitingForIP= new boolean[IPinterfaces.size()];
         this.DHCPidentifier = new int[IPinterfaces.size()];
@@ -87,10 +114,11 @@ public abstract class AbstractRouter extends AbstractHardware
      */
     public AbstractRouter(ArrayList<LinkTypes> port_types, ArrayList<Bandwidth> port_bandwidth,
                           int overflow, ArrayList<Integer> MACinterfaces,
-                          ArrayList<IP> IPinterfaces, ClockSpeed speed) throws BadCallException {
+                          ArrayList<IP> IPinterfaces, ArrayList<IP> MasksInterfaces, ClockSpeed speed) throws BadCallException {
         super(port_types, port_bandwidth, overflow, speed);
         this.MACinterfaces = MACinterfaces;
         this.IPinterfaces = IPinterfaces;
+        this.MasksInterfaces = MasksInterfaces;
         this.routingTable = new RoutingTable();
         this.awaitingForIP= new boolean[IPinterfaces.size()];
         for(int i=0 ; i<awaitingForIP.length ; i++)
@@ -106,7 +134,9 @@ public abstract class AbstractRouter extends AbstractHardware
             throw new OverflowException(this);
         packet.lastPort = port;
         synchronized (this.ports) {
-            this.stack.add(packet);
+            synchronized (this.stack) {
+                this.stack.add(packet);
+            }
         }
     }
 
@@ -120,8 +150,10 @@ public abstract class AbstractRouter extends AbstractHardware
         int mac; //MAC du NHR ou de la cible
         Packet p;
         synchronized (this.ports) {
-            p = stack.get(0);
-            stack.remove(0);
+            synchronized (this.stack) {
+                p = stack.get(0);
+                stack.remove(0);
+            }
         }
         if(p.alreadyTreated) //Si c'était un paquet en attente de libération de la bande passante
         {
@@ -129,6 +161,13 @@ public abstract class AbstractRouter extends AbstractHardware
             this.send(p, p.destinationPort);
             return;
         }
+
+        if(!(this instanceof WANPort) && p.getType() == PacketTypes.RIP && !this.IPinterfaces.contains(p.src_addr))
+        {
+            this.routingTable.treatTable(((RoutingTable)p.getData()), p.src_addr, p.lastPort);
+            return;
+        }
+
         if(p.getType() == PacketTypes.DHCP) // Si on a un paquet DHCP
         {
             //===================================
@@ -143,6 +182,7 @@ public abstract class AbstractRouter extends AbstractHardware
                 p.src_addr = new IP(0,0,0,0);
                 p.dst_mac = p.src_mac;
                 p.src_mac = this.MACinterfaces.get(0);
+                p.isResponse = false;
                 this.send(p, p.lastPort);
                 return;
             }
@@ -150,6 +190,7 @@ public abstract class AbstractRouter extends AbstractHardware
                     && ((DHCPData)p.getData()).isOK()) //Traitement de la validation du choix (DHCPOK)
             {
                 this.IPinterfaces.set(p.lastPort, ((DHCPData) p.getData()).getChosen());
+                this.MasksInterfaces.set(p.lastPort, ((DHCPData) p.getData()).getSubnetInfo().get(1));
                 if(p.lastPort == 0)
                     this.IP = ((DHCPData) p.getData()).getChosen();
                 ((DHCPData) p.getData()).setACK();
@@ -158,6 +199,7 @@ public abstract class AbstractRouter extends AbstractHardware
                 p.dst_addr = ((DHCPData)p.getData()).getDHCPaddr();
                 p.src_addr = IPinterfaces.get(0);
                 p.dst_mac = p.src_mac;
+                p.isResponse = false;
                 p.src_mac = this.MACinterfaces.get(0);
                 awaitingForIP[p.lastPort]=false;
                 this.send(p, p.lastPort);
@@ -186,16 +228,16 @@ public abstract class AbstractRouter extends AbstractHardware
                     p.src_addr = p.dst_addr;
                     p.setNHR(new IP(0,0,0,0));
                     p.dst_addr = new IP(255,255,255,255);
-                    send(p, 0);
+                    send(p, IPinterfaces.indexOf(p.src_addr));
                 }
 
             }
         }
 
-        if(awaitingForIP[p.lastPort]) //Si je ne suis pas configuré en IP (attente DHCP), je quitte
+        if(!(this instanceof WANPort) && awaitingForIP[p.lastPort]) //Si je ne suis pas configuré en IP (attente DHCP), je quitte
             return;
 
-        if(p.getType() == PacketTypes.ARP) //S'il s'agit d'un paquet lié à l'ARP
+        if(p.getType() == PacketTypes.ARP && !(this instanceof WANPort)) //S'il s'agit d'un paquet lié à l'ARP
         {
             if(p.isResponse) //Si c'est une réponse ("IP is at MAC")
             {
@@ -227,9 +269,22 @@ public abstract class AbstractRouter extends AbstractHardware
             return;
         }
 
-        if(this instanceof DHCPServer && p.getType() == PacketTypes.DHCP) //Si on est un serveur DHCP, on le traite
+        if(this instanceof DHCPServer && p.getType() == PacketTypes.DHCP && !p.isResponse) //Si on est un serveur DHCP, on le traite
         {
             this.treatData(p);
+            return;
+        }
+
+
+        if(this instanceof WANPort && p.lastPort == -1)
+        {
+            this.send(p, 0);
+            return;
+        }
+
+        if(this instanceof WANPort && p.lastPort != -1)
+        {
+            treatData(p);
             return;
         }
 
@@ -319,6 +374,8 @@ public abstract class AbstractRouter extends AbstractHardware
      * Lance le propocole DHCP pour trouver une IP (clients et servers only)
      */
     public void DHCPClient(int port) throws BadCallException, OverflowException {
+        if(port >= this.ports.size())
+            throw new BadCallException();
         Packet p =new Packet(new IP(255,255,255,255), new IP(0,0,0,0), this.MACinterfaces.get(0), -1, PacketTypes.DHCP, false, true);
         this.DHCPidentifier[port] = ((DHCPData)p.getData()).identifier;
         this.send(p, port);
@@ -337,6 +394,11 @@ public abstract class AbstractRouter extends AbstractHardware
         {
             this.IP = ip;
         }
+    }
+
+    public void configureMask(int port, IP mask)
+    {
+        this.MasksInterfaces.set(port, mask);
     }
 
     /**
@@ -359,6 +421,9 @@ public abstract class AbstractRouter extends AbstractHardware
         this.routingTable.setDefaultGateway(ip, 0);
     }
 
+    /**
+     * Renvoie la passerelle par défaut
+     */
     public IP getGateway()
     {
         return this.routingTable.getDefaultGateway();
@@ -423,6 +488,11 @@ public abstract class AbstractRouter extends AbstractHardware
      */
     protected void clientRequest(){}
 
+    /**
+     * Renvoie l'IP de l'interface donnée
+     * @param port numéro d'interface
+     * @throws BadCallException si le numéro est faux
+     */
     public IP getInterfaceIP(int port) throws BadCallException {
         if(this.ports.size() <= port || port < 0)
             throw new BadCallException();
@@ -433,6 +503,27 @@ public abstract class AbstractRouter extends AbstractHardware
         return this.IPinterfaces.get(port);
     }
 
+    /**
+     * Renvoie le masque de l'interface donnée
+     * @param port le numéro d'interface
+     * @throws BadCallException si le numéro est faux
+     */
+    public IP getIntefaceMask(int port) throws BadCallException
+    {
+        if(this.ports.size() <= port || port < 0)
+            throw new BadCallException();
+
+        if(this.MasksInterfaces.get(port) == null)
+            return new IP(0,0,0,0);
+
+        return this.MasksInterfaces.get(port);
+    }
+
+    /**
+     * Renvoie la MAC de l'interface donnée
+     * @param port le numéro d'interface
+     * @throws BadCallException si le numéro est faux
+     */
     public int getInterfaceMAC(int port) throws BadCallException
     {
         if(this.ports.size() <= port || port < 0)
@@ -440,11 +531,50 @@ public abstract class AbstractRouter extends AbstractHardware
         return this.MACinterfaces.get(port);
     }
 
+    /**
+     * Es-ce que c'est un relai DHCP ?
+     */
     public Boolean isDHCPRelay() {
         return isDHCPRelay;
     }
 
+    /**
+     * Renvoie l'adresse du serveur DHCP configuré
+     */
     public IP getDHCPaddress() {
         return DHCPaddress;
+    }
+
+    /**
+     * Active le protocole RIP ; supprime toutes les routes et s'auto-configure
+     */
+    public void activateRIP()
+    {
+        this.RIP = true;
+        this.routingTable.clearRoutes();
+        this.routingTable.autoConfigure(IPinterfaces, MasksInterfaces);
+    }
+
+    /**
+     * Désactive RIP, les routes restent intactes
+     */
+    public void desactivateRIP()
+    {
+        this.RIP = false;
+    }
+
+    /**
+     * Envoie la table de sous-réseau (RIP)
+     */
+    public void sendRoutingTable() throws BadCallException, OverflowException
+    {
+        for(int i=0 ; i<ports.size() ; i++)
+        {
+            if(ports.get(i) == null)
+                continue;
+            Packet p = new Packet(new IP(255,255,255,255), ((AbstractRouter)this).getInterfaceIP(i), getInterfaceMAC(i), -1, PacketTypes.RIP, true, false);
+            p.setData(this.routingTable.copy());
+            send(p, i);
+        }
     }
 }

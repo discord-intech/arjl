@@ -1,3 +1,25 @@
+/**
+ * Copyright (C) 2016 Desvignes Julian, Louis-Baptiste Trailin, Aymeric Gleye, Rémi Dulong
+ */
+
+/**
+ This file is part of ARJL.
+
+ ARJL is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ ARJL is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ARJL.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 package table;
 
 import exceptions.BadCallException;
@@ -15,13 +37,15 @@ public class RoutingTable implements Serializable
 {
 
     /** les sous-réseaux */
-    private ArrayList<IP> subnets = new ArrayList<>();
+    protected ArrayList<IP> subnets = new ArrayList<>();
     /** les masques de sous-réseau */
-    private ArrayList<IP> masks = new ArrayList<>();
+    protected ArrayList<IP> masks = new ArrayList<>();
     /** les passerelles (ou NHR) */
-    private ArrayList<IP> gateways = new ArrayList<>();
+    protected ArrayList<IP> gateways = new ArrayList<>();
     /** les numéros de port associés */
-    private ArrayList<Integer> port_numbers = new ArrayList<>();
+    protected ArrayList<Integer> port_numbers = new ArrayList<>();
+    /** metrics*/
+    protected ArrayList<Integer> metrics = new ArrayList<>();
 
     /**
      * Constructeur de la table
@@ -34,6 +58,7 @@ public class RoutingTable implements Serializable
         subnets.add(new IP(0,0,0,0));
         masks.add(new IP(0,0,0,0));
         gateways.add(default_gateway);
+        metrics.add(0);
     }
 
     /**
@@ -45,6 +70,19 @@ public class RoutingTable implements Serializable
         subnets.add(new IP(0,0,0,0));
         masks.add(new IP(0,0,0,0));
         gateways.add(new IP(0,0,0,0));
+        metrics.add(0);
+    }
+
+    /**
+     * Constructeur copiant les arrays fournis
+     */
+    public RoutingTable(ArrayList<IP> subnets, ArrayList<IP> masks, ArrayList<IP> gateways, ArrayList<Integer> ports, ArrayList<Integer> metrics)
+    {
+        this.subnets = (ArrayList<IP>) subnets.clone();
+        this.masks = (ArrayList<IP>) masks.clone();
+        this.gateways = (ArrayList<IP>) gateways.clone();
+        this.port_numbers = (ArrayList<Integer>) ports.clone();
+        this.metrics = (ArrayList<Integer>) metrics.clone();
     }
 
     /**
@@ -214,6 +252,12 @@ public class RoutingTable implements Serializable
                 throw new BadCallException();
             }
 
+            // En cas de mauvais masque
+            if(!((IP)line.get(0)).checkMask((IP)line.get(1)))
+            {
+                throw new BadCallException();
+            }
+
             subnet.add((IP)line.get(0));
             mask.add((IP)line.get(1));
             gateway.add((IP)line.get(2));
@@ -228,8 +272,61 @@ public class RoutingTable implements Serializable
         this.port_numbers = port_number;
     }
 
+    /**
+     * Revie la passerelle par défaut
+     */
     public IP getDefaultGateway()
     {
         return this.gateways.get(0);
+    }
+
+    /**
+     * Renvoie une copie de la table
+     */
+    public RoutingTable copy()
+    {
+        return new RoutingTable(this.subnets, this.masks, this.gateways, this.port_numbers, this.metrics);
+    }
+
+    /**
+     * Configuration automatique des routes pour les sous-réseaux adjacents ; utilisé par RIP
+     */
+    public void autoConfigure(ArrayList<IP> IPinterfaces, ArrayList<IP> masksInterfaces)
+    {
+        for(int i=0 ; i<IPinterfaces.size() ; i++)
+        {
+            subnets.add(IPinterfaces.get(i).getSubnet(masksInterfaces.get(i)));
+            masks.add(masksInterfaces.get(i));
+            gateways.add(IPinterfaces.get(i));
+            port_numbers.add(i);
+            metrics.add(0);
+        }
+    }
+
+    /**
+     * Traite une table de routage reçue par RIP
+     * @param received la table reçue
+     */
+    public synchronized void treatTable(RoutingTable received, IP gateway, int port)
+    {
+        for(int i=0 ; i<received.subnets.size() ; i++)
+        {
+            if(this.subnets.contains(received.subnets.get(i)) && this.masks.get(subnets.indexOf(received.subnets.get(i))).equals(received.masks.get(i)))
+            {
+                if(received.metrics.get(i)+1 < this.metrics.get(subnets.indexOf(received.subnets.get(i))))
+                {
+                    this.gateways.set(subnets.indexOf(received.subnets.get(i)), gateway);
+                    this.metrics.set(subnets.indexOf(received.subnets.get(i)), received.metrics.get(i)+1);
+                }
+            }
+            else //Si on ne l'a pas, on le rajoute
+            {
+                this.subnets.add(received.subnets.get(i));
+                this.masks.add(received.masks.get(i));
+                this.gateways.add(gateway);
+                this.port_numbers.add(port);
+                this.metrics.add(received.metrics.get(i)+1);
+            }
+        }
     }
 }
